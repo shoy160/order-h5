@@ -26,14 +26,17 @@
         <van-image slot="right-icon" :src="vimage" @click="refreshVcode" />
       </van-field>
     </van-cell-group>
-    <van-button type="primary" @click="handleLogin" class="btn-login"
-      >登 录</van-button
-    >
+    <div class="d-btn">
+      <van-button type="primary" @click="handleLogin">登 录</van-button>
+    </div>
   </div>
 </template>
 <style scoped>
-.btn-login {
+.d-btn {
   margin-top: 1.5rem;
+  text-align: center;
+}
+.d-btn .van-button {
   width: 80%;
 }
 </style>

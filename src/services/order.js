@@ -17,3 +17,11 @@ export const search = (dto = {}) => {
 export const detail = id => {
   return ajax.get(`/order/${id}`)
 }
+
+export const policyJpg = id => {
+  return ajax.get('/order/jpg', {
+    params: {
+      orderId: id
+    }
+  })
+}
