@@ -1,3 +1,5 @@
+import { UA } from 'singerjs'
+import axios from 'axios'
 /**
  * 时间转换
  */
@@ -7,8 +9,9 @@ export const toDate = time => {
     if (typeof time === 'number') return new Date(time)
     if (typeof time === 'string') new Date(time.replace(/-/g, '/'))
     return new Date(time)
-  } catch (e) {}
-  return time
+  } catch (e) {
+    return time
+  }
 }
 
 /**
@@ -49,7 +52,7 @@ export function isAlipay() {
  * 使用地图
  */
 export const useMap = () => {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function(resolve) {
     if (typeof AMap !== 'undefined') {
       resolve()
       return
@@ -74,5 +77,55 @@ export const useMap = () => {
       }
     }
     document.body.appendChild(script)
+  })
+}
+
+const download = (url, filename) => {
+  // 创建隐藏<a>标签进行下载
+  var tempLink = document.createElement('a')
+  tempLink.style.display = 'none'
+  tempLink.href = url
+  tempLink.setAttribute('download', filename)
+  if (typeof tempLink.download === 'undefined') {
+    tempLink.setAttribute('target', '_blank')
+  }
+  console.log(tempLink)
+  document.body.appendChild(tempLink)
+  tempLink.click()
+  document.body.removeChild(tempLink)
+}
+
+export const downloadFile = (url, filename) => {
+  var ua = UA()
+  return new Promise((resolve, reject) => {
+    if (ua.ios) {
+      download(url, filename)
+      resolve()
+    } else {
+      axios({
+        method: 'get',
+        responseType: 'arraybuffer',
+        url: url
+      })
+        .then(res => {
+          let blob = new Blob([res.data], {
+            //type类型后端返回来的数据中会有，根据自己实际进行修改
+            type: 'application/pdf'
+          })
+          if (typeof window.navigator.msSaveBlob !== 'undefined') {
+            window.navigator.msSaveBlob(blob, filename)
+          } else {
+            var blobURL = window.URL.createObjectURL(blob)
+            download(blobURL, filename)
+            window.URL.revokeObjectURL(blobURL)
+          }
+          resolve()
+        })
+        .catch(err => {
+          //调试阶段可以看看报的什么错
+          console.log('error', err)
+          reject(err)
+        })
+    }
   })
 }

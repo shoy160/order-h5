@@ -1,5 +1,14 @@
 <template>
   <div>
+    <div class="d-avatar">
+      <van-image
+        round
+        width="8rem"
+        height="8rem"
+        src="http://220.167.101.49:8092/uploads/-/system/group/avatar/30/20170227.png"
+      />
+      <h3>用户登录</h3>
+    </div>
     <van-cell-group>
       <van-field
         v-model="account"
@@ -32,6 +41,13 @@
   </div>
 </template>
 <style scoped>
+.d-avatar {
+  text-align: center;
+  margin: 2.5rem 0;
+}
+.d-avatar h3 {
+  color: #999;
+}
 .d-btn {
   margin-top: 1.5rem;
   text-align: center;
@@ -73,10 +89,18 @@ export default {
       })
     },
     handleLogin() {
-      login(this.account, this.pwd, this.vkey, this.vcode).then(json => {
-        setTicket(json.ticket)
-        this.$router.replace('/order')
+      this.$toast.loading({
+        message: '登录中...',
+        forbidClick: true
       })
+      login(this.account, this.pwd, this.vkey, this.vcode)
+        .then(json => {
+          setTicket(json.ticket)
+          this.$router.replace('/order')
+        })
+        .catch(() => {
+          // loading.clear()
+        })
     }
   }
 }

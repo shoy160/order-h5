@@ -42,10 +42,8 @@ $axios.interceptors.response.use(
     if (res.hasOwnProperty('status') && !res.status) {
       //Toast(res.message)
       Toast({
-        type: 'fail',
-        icon: '-',
-        position: 'bottom',
         message: res.message,
+        position: 'bottom',
         duration: 2000
       })
       if (10005 === res.code || 10006 === res.code) {

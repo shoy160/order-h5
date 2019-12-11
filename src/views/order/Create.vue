@@ -552,6 +552,8 @@
 </template>
 <script>
 import Menus from '@/components/Menus'
+import { unitList } from '@/services/account'
+import { ocr } from '@/services/ocr'
 import Vue from 'vue'
 import {
   NavBar,
@@ -633,6 +635,9 @@ export default {
       invoiceAmountShow: false
     }
   },
+  mounted() {
+    this.loadUnit()
+  },
   methods: {
     showPopup(type, status = true) {
       this.popList[type] = status
@@ -669,7 +674,10 @@ export default {
       this.popList.installContact = false
     },
     handleUploadIdCard(file) {
-      console.log(file)
+      console.log(file) //content,file
+      ocr(file.file, 0).then(json => {
+        console.log(json)
+      })
     },
     handleUploadBusiLicense(file) {
       console.log(file)
@@ -685,6 +693,11 @@ export default {
     },
     handleUploadExtend(file) {
       console.log(file)
+    },
+    loadUnit(type = 1) {
+      unitList(type).then(json => {
+        console.log(json)
+      })
     }
   }
 }

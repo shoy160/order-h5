@@ -1,5 +1,5 @@
 <template>
-  <van-tabbar v-model="active" route :z-index="11">
+  <van-tabbar :value="active" route :z-index="11">
     <van-tabbar-item name="orders" icon="orders-o" to="/order"
       >订单</van-tabbar-item
     >

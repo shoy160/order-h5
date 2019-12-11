@@ -18,6 +18,27 @@ export const detail = id => {
   return ajax.get(`/order/${id}`)
 }
 
+
+
+/**
+ * 服务模板
+ * @param {*} shopId
+ */
+export const templates = shopId => {
+  return ajax.get('/template/shop', {
+    params: {
+      shopId: shopId,
+      type: 0
+    }
+  })
+}
+
+
+
+/**
+ * 保单转图片
+ * @param {*} id
+ */
 export const policyJpg = id => {
   return ajax.get('/order/jpg', {
     params: {
