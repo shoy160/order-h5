@@ -28,7 +28,7 @@
                 item.orderType == 0 ? 'i车保' : '凡车汇'
               }}</van-tag>
               <van-tag color="#ff5400" plain>{{
-                item.ownerType == 1 ? '个人' : '团体'
+                item.ownerType == 1 ? '个人' : '企业'
               }}</van-tag>
               <!-- <van-tag color="#dd85ee" plain v-if="item.isMortgage">摩托</van-tag> -->
               <van-tag type="success" plain v-if="item.isElectronPolicy"
@@ -47,7 +47,7 @@
               <span>{{ item.vin }}</span>
             </div>
             <div class="d-item">
-              <label>车主:</label>
+              <label>{{ item.ownerType == 1 ? '车主' : '企业' }}:</label>
               <span>{{ item.ownerName }}</span>
             </div>
             <div class="d-item">
@@ -56,7 +56,9 @@
             </div>
             <div class="d-item">
               <label>销售员:</label>
-              <span>{{ item.shopSaleName }} {{ item.shopName }}</span>
+              <span>
+                {{ item.shopSaleName }} <small>{{ item.shopName }}</small>
+              </span>
             </div>
             <div class="d-item">
               <label>服务期限:</label>
@@ -78,7 +80,7 @@
               >详情</van-button
             >
             <van-button
-              v-if="item.state == 40"
+              v-if="item.isElectronPolicy && item.state == 40"
               size="small"
               type="warning"
               @click="handlePolicy(item.id, item.policyNumber)"
@@ -114,6 +116,8 @@ import {
   Tag,
   Button,
   Icon,
+  Row,
+  Col,
   Popup
 } from 'vant'
 
@@ -125,6 +129,8 @@ Vue.use(NavBar)
   .use(Button)
   .use(Icon)
   .use(PullRefresh)
+  .use(Row)
+  .use(Col)
   .use(Popup)
 import { search, detail } from '@/services/order'
 export default {

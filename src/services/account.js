@@ -41,12 +41,24 @@ export const getVcode = key => {
  * 经销商列表
  */
 export const shopList = (page = 1) => {
-  return ajax.get(`${authHost}/shop/current`, {
-    params: {
-      page: page,
-      size: 500
-    }
-  })
+  return ajax
+    .get(`${authHost}/shop/current`, {
+      params: {
+        page: page,
+        size: 500
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        var shops = []
+        for (var i in json.data) {
+          var item = json.data[i]
+          shops.push({ id: item.id, text: item.name, address: item.addrDesc })
+        }
+        return shops
+      }
+      return json
+    })
 }
 
 /**
@@ -55,14 +67,26 @@ export const shopList = (page = 1) => {
  * @param {*} page 2,金融公司
  */
 export const unitList = (type, page = 1) => {
-  return ajax.get(`${authHost}/unit`, {
-    params: {
-      type: type,
-      state: 0,
-      page: page,
-      size: 50
-    }
-  })
+  return ajax
+    .get(`${authHost}/unit`, {
+      params: {
+        type: type,
+        state: 0,
+        page: page,
+        size: 50
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        var units = []
+        for (var index in json.data) {
+          var item = json.data[index]
+          units.push({ id: item.id, text: item.name })
+        }
+        return units
+      }
+      return json
+    })
 }
 
 /**
@@ -79,15 +103,55 @@ export const versionTree = (type = 4) => {
 }
 
 /**
+ * 车型配置列表
+ * @param {*} versionId
+ * @param {*} all
+ */
+export const configList = (versionId, all = false) => {
+  return ajax
+    .get(`${authHost}/vehicle/basic/config`, {
+      params: {
+        versionId: versionId,
+        page: 1,
+        size: 500,
+        onsale: !all
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        var list = []
+        for (var index in json.data) {
+          var item = json.data[index]
+          list.push({ id: item.id, text: item.name })
+        }
+        return list
+      }
+      return json
+    })
+}
+
+/**
  * 驻店员列表
  * @param {*} shopId
  */
 export const icbSaleList = shopId => {
-  return ajax(`${authHost}/appm/employee/acb_sale`, {
-    params: {
-      shopId: shopId
-    }
-  })
+  return ajax
+    .get(`${authHost}/appm/employee/acb_sale`, {
+      params: {
+        shopId: shopId
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        var list = []
+        for (var index in json.data) {
+          var item = json.data[index]
+          list.push({ id: item.id, text: item.name, mobile: item.mobile })
+        }
+        return list
+      }
+      return json
+    })
 }
 
 /**
@@ -96,12 +160,24 @@ export const icbSaleList = shopId => {
  * @param {*} page
  */
 export const saleList = (shopId, page = 1) => {
-  return ajax.get(`${authHost}/shop/employee`, {
-    params: {
-      role: 4,
-      shopId: shopId,
-      page: page,
-      size: 50
-    }
-  })
+  return ajax
+    .get(`${authHost}/shop/employee`, {
+      params: {
+        role: 4,
+        shopId: shopId,
+        page: page,
+        size: 50
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        var list = []
+        for (var index in json.data) {
+          var item = json.data[index]
+          list.push({ id: item.id, text: item.name, mobile: item.mobile })
+        }
+        return list
+      }
+      return json
+    })
 }

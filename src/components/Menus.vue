@@ -1,6 +1,6 @@
 <template>
   <van-tabbar :value="active" route :z-index="11">
-    <van-tabbar-item name="orders" icon="orders-o" to="/order"
+    <van-tabbar-item name="orders" icon="orders-o" to="/order/list"
       >订单</van-tabbar-item
     >
     <van-tabbar-item name="new" icon="plus" to="/order/create"

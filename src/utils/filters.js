@@ -38,7 +38,7 @@ const _formatDate = function (date, format) {
  * @param {Date} date
  * @param {string} format
  */
-export function time(date, format = 'yyyy-MM-dd HH:mm') {
+export function time(date, format = 'yyyy-MM-dd hh:mm') {
   return _formatDate(date, format)
 }
 

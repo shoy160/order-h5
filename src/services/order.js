@@ -18,22 +18,47 @@ export const detail = id => {
   return ajax.get(`/order/${id}`)
 }
 
-
-
 /**
  * 服务模板
  * @param {*} shopId
  */
 export const templates = shopId => {
-  return ajax.get('/template/shop', {
+  return ajax
+    .get('/template/shop', {
+      params: {
+        shopId: shopId,
+        type: 0
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        var list = []
+        for (var i in json.data) {
+          var item = json.data[i]
+          if (0 !== item.state) {
+            continue
+          }
+          list.push({ id: item.id, text: item.name, month: item.year })
+        }
+        return list
+      }
+      return json
+    })
+}
+
+/**
+ * 设备模板
+ * @param {*} shopId
+ * @param {*} versionId
+ */
+export const deviceTemplate = (shopId, versionId) => {
+  return ajax.get('/template/device/version_shop', {
     params: {
       shopId: shopId,
-      type: 0
+      versionId: versionId
     }
   })
 }
-
-
 
 /**
  * 保单转图片

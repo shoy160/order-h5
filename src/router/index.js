@@ -14,7 +14,7 @@ const routes = [
     component: () => import('../views/account/Index.vue')
   },
   {
-    path: '/order',
+    path: '/order/list',
     name: 'OrderList',
     component: () => import('../views/order/List.vue')
   },
@@ -22,6 +22,16 @@ const routes = [
     path: '/order/create',
     name: 'OrderCreate',
     component: () => import('../views/order/Create.vue')
+  },
+  {
+    path: '/404',
+    name: 'NotFound',
+    component: () => import('../views/errors/404.vue')
+  },
+  {
+    path: '',
+    redirect: '/order/list',
+    hidden: true
   }
 ]
 

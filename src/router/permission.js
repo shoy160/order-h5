@@ -2,7 +2,7 @@ import router from './index'
 import store from '../store'
 import { getTicket } from '../utils/auth'
 
-const whiteList = ['Login']
+const whiteList = ['Login', 'NotFound']
 
 router.beforeEach((to, from, next) => {
   if (whiteList.indexOf(to.name) >= 0) {

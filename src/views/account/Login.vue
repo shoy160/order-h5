@@ -5,7 +5,7 @@
         round
         width="8rem"
         height="8rem"
-        src="http://220.167.101.49:8092/uploads/-/system/group/avatar/30/20170227.png"
+        src="http://file.i-cbao.com/uploads/icb.png"
       />
       <h3>用户登录</h3>
     </div>
@@ -96,7 +96,7 @@ export default {
       login(this.account, this.pwd, this.vkey, this.vcode)
         .then(json => {
           setTicket(json.ticket)
-          this.$router.replace('/order')
+          this.$router.replace('/order/list')
         })
         .catch(() => {
           // loading.clear()
