@@ -11,6 +11,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "core-js": "^3.4.3",
+    "exif-js": "^2.3.0",
     "js-cookie": "^2.2.1",
     "js-pinyin": "^0.1.9",
     "singerjs": "^1.0.10",
@@ -31,6 +32,8 @@
     "babel-plugin-import": "^1.13.0",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
     "vue-template-compiler": "^2.6.10"
   }
 }

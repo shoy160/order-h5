@@ -1,0 +1,67 @@
+@bgColor: #fefefe;
+@colorError: #ee0a24;
+@colorWarning: #f82;
+.d-error {
+  background-color: #ff976a;
+  .van-field__control {
+    color: @colorError;
+    -webkit-text-fill-color: @colorError;
+  }
+  .d-input-unit {
+    background-color: transparent;
+  }
+}
+
+.d-warning {
+  background-color: #ffb;
+  .d-input-unit {
+    background-color: transparent;
+  }
+  .van-field__control {
+    color: @colorWarning;
+    -webkit-text-fill-color: @colorWarning;
+  }
+}
+
+.van-uploader {
+  padding: 10px 0;
+  .van-uploader__preview {
+    margin: 0 1.2rem 1.2rem 0;
+  }
+}
+.van-picker__toolbar {
+  .van-search {
+    width: 60%;
+  }
+}
+
+.van-radio {
+  margin-left: 0.6rem;
+}
+.d-header {
+  z-index: 2 !important;
+  background-color: @bgColor;
+}
+.d-form {
+  margin: 46px 0;
+}
+.d-input-unit {
+  padding: 0 0.5rem;
+  background-color: #eee;
+}
+.d-actions {
+  text-align: right;
+  background-color: @bgColor;
+  padding: 1rem;
+  .van-button {
+    margin-left: 0.5rem;
+  }
+}
+.d-version-selector {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform: none;
+  top: 0;
+  left: 0;
+}

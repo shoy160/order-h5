@@ -21,6 +21,7 @@
           :key="item.id"
           :title="item.policyNumber"
           :status="item.stateFormat"
+          :class="'d-status-' + item.state"
         >
           <div class="d-content">
             <div class="d-tags">
@@ -189,10 +190,10 @@ export default {
           }
         }
       } else {
-        this.state = -1
+        this.input.state = -1
         this.input.vin = ''
         this.input.policyNumber = ''
-        this.owner = ''
+        this.input.owner = ''
       }
       return search(this.input).then(json => {
         if (clear) this.list = []
@@ -298,5 +299,20 @@ export default {
 }
 .d-footer .van-button {
   margin-left: 0.3rem;
+}
+
+.d-status--200 .van-panel__header-value {
+  color: #999;
+}
+.d-status-10 .van-panel__header-value {
+  color: #1989fa;
+}
+
+.d-status-20 .van-panel__header-value {
+  color: #ff976a;
+}
+
+.d-status-40 .van-panel__header-value {
+  color: #07c160;
 }
 </style>

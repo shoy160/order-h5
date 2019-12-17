@@ -85,7 +85,7 @@ export default {
   data() {
     return { keyword: '', indexList: [], list: [] }
   },
-  mounted() {    
+  mounted() {
     var array = this.brand.split('/')
     this.keyword = array.length > 1 ? array[1] : array[0]
     this.getVersions(this.type)

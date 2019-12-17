@@ -45,7 +45,7 @@
         is-link
         arrow-direction="down"
         placeholder="请选择本店销售"
-        @click="showPopup('sales')"
+        @click="showPopup('saleList')"
       />
       <van-switch-cell
         title="企业订单"
@@ -264,21 +264,30 @@
           label="车架号"
           required
           input-align="right"
+          clearable
+          :right-icon="ocrs.vins.length > 0 ? 'arrow-down' : ''"
           placeholder="请输入车架号"
+          @click-right-icon="showPopup('vins')"
         />
         <van-field
           v-model="model.vehicleExtend.engineNumber"
           label="发动机号"
           required
           input-align="right"
+          clearable
+          :right-icon="ocrs.engines.length > 0 ? 'arrow-down' : ''"
           placeholder="请输入发动机号"
+          @click-right-icon="showPopup('engines')"
         />
         <van-field
           v-model="model.vehicleExtend.factoryNumber"
           label="厂牌型号"
           required
           input-align="right"
+          clearable
+          :right-icon="ocrs.factories.length > 0 ? 'arrow-down' : ''"
           placeholder="请输入厂牌型号"
+          @click-right-icon="showPopup('factories')"
         />
         <van-field
           v-model="model.vehicleExtend.color"
@@ -322,6 +331,7 @@
         <van-switch-cell title="按揭" v-model="model.isMortgage" />
         <div class="mortgage" v-if="model.isMortgage">
           <van-field
+            v-model="model.vehicleExtend.financeName"
             label="金融公司"
             required
             input-align="right"
@@ -329,6 +339,7 @@
             is-link
             arrow-direction="down"
             placeholder="请选择金融公司"
+            @click="showPopup('finances')"
           />
           <van-field
             v-model="model.vehicleExtend.mortgageAmount"
@@ -353,10 +364,26 @@
             @blur="mortgageAmountShow = false"
           />
           <van-field
+            v-model="model.vehicleExtend.mortgageMonth"
             label="按揭期限"
             required
+            readonly
+            clickable
+            type="number"
             input-align="right"
             placeholder="请输入按揭期限"
+            @click="mortgageMonthShow = true"
+            :class="{ 'd-warning': model.vehicleExtend.mortgageMonth > 50 }"
+          >
+            <div slot="right-icon" class="d-input-unit">月</div>
+          </van-field>
+          <van-number-keyboard
+            v-model="model.vehicleExtend.mortgageMonth"
+            theme="custom"
+            close-button-text="完成"
+            :show="mortgageMonthShow"
+            :maxlength="3"
+            @blur="mortgageMonthShow = false"
           />
           <van-field
             v-model="model.vehicleExtend.financeRemark"
@@ -619,20 +646,17 @@
           <van-uploader
             slot="input"
             :max-count="5"
-            v-model="previewExtend"
+            v-model="model.extendPicture"
             :after-read="handleUploadExtend"
           />
         </van-field>
       </van-cell-group>
-      <!-- <div class="d-actions">
-        <van-button>保存草稿</van-button>
-        <van-button type="primary">创建订单</van-button>
-      </div> -->
     </div>
     <!--经销商-->
     <van-popup v-model="popList.shops" position="bottom">
       <van-picker
         show-toolbar
+        title="选择经销商"
         :columns="shops"
         :value="model.shopName"
         @cancel="showPopup('shops', false)"
@@ -643,6 +667,7 @@
     <van-popup v-model="popList.icbSales" position="bottom">
       <van-picker
         show-toolbar
+        title="驻店员"
         :columns="icbSaleList"
         :value="currentIcbSale.text"
         @cancel="showPopup('icbSales', false)"
@@ -650,19 +675,34 @@
       />
     </van-popup>
     <!--销售员-->
-    <van-popup v-model="popList.sales" position="bottom">
+    <van-popup v-model="popList.saleList" position="bottom">
       <van-picker
         show-toolbar
-        :columns="saleList"
+        title="本店销售"
+        :columns="sourceList.saleList"
         :value="currentSale.text"
-        @cancel="showPopup('sales', false)"
+        @cancel="showPopup('saleList', false)"
         @confirm="changeSale"
-      />
+      >
+        <van-search
+          v-model="keyword"
+          clearable
+          slot="title"
+          placeholder="本店销售"
+          show-action
+          @search="handlePickerSearch('saleList')"
+        >
+          <div slot="action" @click="handlePickerSearch('saleList')">
+            搜索
+          </div>
+        </van-search>
+      </van-picker>
     </van-popup>
     <!--保险公司-->
     <van-popup v-model="popList.insurances" position="bottom">
       <van-picker
         show-toolbar
+        title="保险公司"
         :columns="insurances"
         :value="model.electronPolicySupplierName"
         @cancel="showPopup('insurances', false)"
@@ -673,6 +713,7 @@
     <van-popup v-model="popList.templates" position="bottom">
       <van-picker
         show-toolbar
+        title="服务模板"
         :columns="templates"
         :value="currentTemplate.text"
         @cancel="showPopup('templates', false)"
@@ -682,6 +723,7 @@
     <van-popup v-model="popList.idType" position="bottom">
       <van-picker
         show-toolbar
+        title="证件类型"
         :columns="idTypes"
         :value="cardType"
         @cancel="showPopup('idType', false)"
@@ -690,9 +732,10 @@
     </van-popup>
     <van-popup v-model="popList.contactType" position="bottom">
       <van-picker
-        show-toolbar
-        :columns="contactTypes"
         :value="model.spareRelation"
+        show-toolbar
+        title="联系人类型"
+        :columns="contactTypes"
         @cancel="showPopup('contactType', false)"
         @confirm="changeContactType"
       />
@@ -700,16 +743,19 @@
     <!--支付方式-->
     <van-popup v-model="popList.paymode" position="bottom">
       <van-picker
-        show-toolbar
-        :columns="paymodes"
         :value="paymode"
+        show-toolbar
+        title="支付方式"
+        :columns="paymodes"
         @cancel="showPopup('paymode', false)"
         @confirm="changePaymode"
       />
     </van-popup>
     <van-popup v-model="popList.installContact" position="bottom">
       <van-picker
+        :value="installContact"
         show-toolbar
+        title="安装联系人类型"
         :columns="installContacts"
         @cancel="showPopup('installContact', false)"
         @confirm="changeInstallContact"
@@ -718,6 +764,7 @@
     <van-popup v-model="popList.buyTime" position="bottom">
       <van-datetime-picker
         :value="model.vehicleExtend.buyTime"
+        title="购买时间"
         type="date"
         @cancel="showPopup('buyTime', false)"
         @confirm="changeBuyTime"
@@ -726,6 +773,7 @@
     <van-popup v-model="popList.serviceStart" position="bottom">
       <van-datetime-picker
         :value="model.serviceStart"
+        title="起保时间"
         type="date"
         @cancel="showPopup('serviceStart', false)"
         @confirm="changeServiceStart"
@@ -743,557 +791,86 @@
         @select="handleVersionSelect"
       />
     </van-popup>
+    <!--车型配置-->
     <van-popup v-model="popList.configList" position="bottom">
       <van-picker
         show-toolbar
         :value="model.vehicleExtend.configName"
-        :columns="configList"
+        :columns="sourceList.configList"
         @cancel="showPopup('configList', false)"
         @confirm="changeConfigList"
+      >
+        <van-search
+          v-model="keyword"
+          clearable
+          slot="title"
+          placeholder="车型配置"
+          show-action
+          @search="handlePickerSearch('configList')"
+        >
+          <div slot="action" @click="handlePickerSearch('configList')">
+            搜索
+          </div>
+        </van-search>
+      </van-picker>
+    </van-popup>
+    <!--金融公司-->
+    <van-popup v-model="popList.finances" position="bottom">
+      <van-picker
+        show-toolbar
+        :value="model.vehicleExtend.financeName"
+        :columns="sourceList.finances"
+        @cancel="showPopup('finances', false)"
+        @confirm="changeFinanceUnit"
+      >
+        <van-search
+          v-model="keyword"
+          clearable
+          slot="title"
+          placeholder="金融公司"
+          show-action
+          @search="handlePickerSearch('finances')"
+        >
+          <div slot="action" @click="handlePickerSearch('finances')">
+            搜索
+          </div>
+        </van-search>
+      </van-picker>
+    </van-popup>
+    <van-popup v-model="popList.vins" position="bottom">
+      <van-picker
+        show-toolbar
+        title="车架号"
+        :value="model.vehicleExtend.vin"
+        :columns="ocrs.vins"
+        @cancel="showPopup('vins', false)"
+        @confirm="changeVin"
+      />
+    </van-popup>
+    <van-popup v-model="popList.engines" position="bottom">
+      <van-picker
+        show-toolbar
+        title="发动机号"
+        :value="model.vehicleExtend.engineNumber"
+        :columns="ocrs.engines"
+        @cancel="showPopup('engines', false)"
+        @confirm="changeEngine"
+      />
+    </van-popup>
+    <van-popup v-model="popList.factories" position="bottom">
+      <van-picker
+        show-toolbar
+        title="厂牌型号"
+        :value="model.vehicleExtend.factoryNumber"
+        :columns="ocrs.factories"
+        @cancel="showPopup('factories', false)"
+        @confirm="changeFactory"
       />
     </van-popup>
   </div>
 </template>
 <script>
-import Menus from '@/components/Menus'
-import VersionSelector from '@/components/VersionSelector'
-import { templates, deviceTemplate } from '@/services/order'
-import { icbSaleList, saleList, configList } from '@/services/account'
-import { ocr, upload } from '@/services/ocr'
-import { mapGetters } from 'vuex'
-import Vue from 'vue'
-import {
-  NavBar,
-  CellGroup,
-  SwitchCell,
-  Row,
-  Col,
-  Picker,
-  Field,
-  NumberKeyboard,
-  DatetimePicker,
-  Uploader,
-  RadioGroup,
-  Radio,
-  Button,
-  Popup,
-  Icon
-} from 'vant'
-Vue.use(NavBar)
-  .use(CellGroup)
-  .use(SwitchCell)
-  .use(Row)
-  .use(Col)
-  .use(Picker)
-  .use(Field)
-  .use(NumberKeyboard)
-  .use(DatetimePicker)
-  .use(Uploader)
-  .use(RadioGroup)
-  .use(Radio)
-  .use(Button)
-  .use(Popup)
-  .use(Icon)
-export default {
-  name: 'CreateOrder',
-  components: {
-    Menus,
-    VersionSelector
-  },
-  data() {
-    return {
-      model: {
-        ownerType: 1,
-        cardType: 1,
-        payRemark: '',
-        vehicleExtend: {
-          financeRemark: '',
-          plateColor: '蓝色',
-          buyTime: new Date()
-        },
-        installExtend: {
-          addressType: 1,
-          address: '',
-          contractType: 0,
-          contractName: '',
-          contractMobile: ''
-        },
-        remark: '',
-        orderSource: 4,
-        isElectronPolicy: true,
-        isCreateInstall: true,
-        isCreateOwner: true,
-        serviceStart: new Date().addDays(1),
-        extendPicture: []
-      },
-      popList: {
-        shops: false,
-        icbSales: false,
-        sales: false,
-        idType: false,
-        contactType: false,
-        paymode: false,
-        installContact: false,
-        insurances: false,
-        templates: false,
-        buyTime: false,
-        serviceStart: false,
-        versionSelector: false,
-        configList: false
-      },
-      scrollTop: 0,
-      showForm: true,
-      isCompany: false,
-      currentShop: {},
-      currentIcbSale: { text: '' },
-      currentSale: { text: '' },
-      currentTemplate: { text: '' },
-      cardType: '身份证',
-      paymode: '',
-      vehicleVersion: '',
-      brandName: '',
-      deviceTemplate: '',
-      installContact: '驻店员',
-      idTypes: [
-        { type: 1, text: '身份证' },
-        { type: 2, text: '驾驶证' },
-        { type: 3, text: '军官证' },
-        { type: 4, text: '护照' },
-        { type: 6, text: '港澳通行证' }
-      ],
-      contactTypes: ['家人', '同事', '朋友', '其他'],
-      paymodes: [
-        { type: 1, text: '支付宝' },
-        { type: 2, text: '微信' },
-        { type: 3, text: '对公转账' },
-        { type: 4, text: '成都银行扫码' },
-        { type: 5, text: 'POS机' },
-        { type: 6, text: '月结' }
-      ],
-      installContacts: [
-        { type: 0, text: '驻店员' },
-        { type: 1, text: '销售顾问' },
-        { type: 2, text: '车主' },
-        { type: 3, text: '备用联系人' },
-        { type: -1, text: '其他' }
-      ],
-      icbSaleList: [],
-      saleList: [],
-      templates: [],
-      configList: [],
-      previewIdCard: [],
-      previewBusiLicense: [],
-      previewInvoice: [],
-      previewQc: [],
-      previewPayment: [],
-      previewExtend: [],
-      invoiceAmountShow: false,
-      mortgageAmountShow: false,
-      insuredAmountShow: false,
-      receivableAmountShow: false,
-      paidAmountShow: false,
-      handlePaidAmountShow: false
-    }
-  },
-  computed: {
-    ...mapGetters(['shops', 'insurances', 'carTypes', 'motoTypes'])
-  },
-  mounted() {
-    this.$store.dispatch('getShops', () => {
-      if (this.shops.length > 0) {
-        var shop = this.shops[0]
-        this.changeShop(shop)
-      }
-    })
-    this.$store.dispatch('getInsurances', () => {
-      if (this.insurances.length > 0) {
-        this.changeInsurance(this.insurances[0])
-      }
-    })
-    this.model.serviceStart = new Date().addDays(1)
-  },
-  methods: {
-    showPopup(type, status = true) {
-      this.popList[type] = status
-    },
-    changeOrderType(checked) {
-      if (checked) {
-        this.model.ownerType = 2
-        this.model.cardType = 5
-      } else {
-        this.model.ownerType = 1
-        this.model.cardType = 1
-        this.cardType = '身份证'
-      }
-    },
-    changeShop(value) {
-      this.currentShop = value
-      this.model.shopName = value.text
-      // this.model.shopId = value.id
-      if (this.model.installExtend.addressType === 1) {
-        this.model.installExtend.address = value.address
-      }
-      this.$set(this.model, 'shopId', value.id)
-      this.popList.shops = false
-      //驻店员
-      icbSaleList(value.id).then(json => {
-        if (!json || json.length === 0) {
-          value.disabled = true
-          this.$toast('该经销商没有驻店员,请重新选择')
-          return
-        }
-        this.changeIcbSale(json[0])
-        this.icbSaleList = json
-      })
-      //本店销售
-      saleList(value.id).then(json => {
-        if (!json || json.length === 0) {
-          value.disabled = true
-          this.$toast('该经销商没有销售员,请重新选择')
-          return
-        }
-        // this.changeSale(json[0])
-        this.saleList = json
-      })
-      templates(value.id).then(json => {
-        if (!json || json.length === 0) {
-          value.disabled = true
-          this.$toast('该经销商没有可用的服务模板')
-          return
-        }
-        this.templates = json
-      })
-    },
-    changeIcbSale(value) {
-      this.currentIcbSale = value
-      this.model.icbSaleId = value.id
-      if (this.model.installExtend.contractType === 0) {
-        this.model.installExtend.contractName = value.text
-        this.model.installExtend.contractMobile = value.mobile
-      }
-      // this.popList.icbSales = false
-      this.$set(this.popList, 'icbSales', false)
-    },
-    changeSale(value) {
-      this.currentSale = value
-      this.model.shopSaleId = value.id
-      // this.popList.sales = false
-      this.$set(this.popList, 'sales', false)
-    },
-    changeInsurance(value) {
-      //保险公司
-      this.model.electronPolicySupplierName = value.text
-      this.model.electronPolicySupplierId = value.id
-      this.$set(this.model, 'electronPolicySupplierId', value.id)
-      this.popList.insurances = false
-    },
-    changeTemplate(value) {
-      this.currentTemplate = value
-      this.model.templateId = value.id
-      this.model.year = value.month / 12
-      this.changeServiceStart(this.model.serviceStart)
-      this.popList.templates = false
-    },
-    changeIDType(value) {
-      this.cardType = value.text
-      this.model.cardType = value.type
-      this.popList.changeShops = false
-    },
-    changeContactType(value) {
-      //备用联系人
-      this.model.spareRelation = value
-      this.popList.contactType = false
-    },
-    changeVehicleType() {
-      //修改车辆类型 todo 存储之前的选择
-      //重置车型
-      this.model.vehicleExtend.factoryId = ''
-      this.model.vehicleExtend.factoryName = ''
-      this.model.vehicleExtend.brandId = ''
-      this.model.vehicleExtend.brandName = ''
-      this.model.vehicleExtend.versionId = ''
-      this.model.vehicleExtend.versionName = ''
-      this.vehicleVersion = ''
-      //重置车型配置
-      this.configList = []
-      this.model.vehicleExtend.configId = ''
-      this.model.vehicleExtend.configName = ''
-      //重置设备模板
-      this.model.installExtend.templateDeviceId = ''
-      this.deviceTemplate = ''
-    },
-    changePaymode(value) {
-      this.paymode = value.text
-      this.model.payType = value.type
-      if (value.type === 6 || value.type === 3) {
-        this.model.payRemark = value.text
-      } else {
-        this.model.payRemark = ''
-      }
-      this.popList.paymode = false
-    },
-    changeInstallContact(value) {
-      //安装联系人
-      this.installContact = value.text
-      this.model.installExtend.ContractType = value.type
-      if (value.type === 0) {
-        this.model.installExtend.contractName = this.currentIcbSale.text
-        this.model.installExtend.contractMobile = this.currentIcbSale.mobile
-      } else if (value.type === 1) {
-        this.model.installExtend.contractName = this.currentSale.text || ''
-        this.model.installExtend.contractMobile = this.currentSale.mobile || ''
-      } else if (value.type === 2) {
-        this.model.installExtend.contractName = this.model.ownerName || ''
-        this.model.installExtend.contractMobile = this.model.ownerMobile || ''
-      } else if (value.type === 3) {
-        this.model.installExtend.contractName = this.model.spareName || ''
-        this.model.installExtend.contractMobile = this.model.spareMobile || ''
-      } else {
-        this.model.installExtend.contractName = ''
-        this.model.installExtend.contractMobile = ''
-      }
-      this.popList.installContact = false
-    },
-    changeInstallAddressType(value) {
-      if (value === 1) {
-        //店内
-        this.model.installExtend.address = this.currentShop.address
-      } else {
-        //上门
-        this.model.installExtend.address = ''
-      }
-    },
-    changeBuyTime(date) {
-      this.model.vehicleExtend.buyTime = date
-      this.popList.buyTime = false
-    },
-    changeServiceStart(date) {
-      this.model.serviceStart = date || new Date().addDays(1)
-      var end = new Date(date)
-      end.setMonth(end.getMonth() + this.currentTemplate.month)
-      this.$set(this.model, 'serviceEnd', end.addDays(-1))
-      this.popList.serviceStart = false
-    },
-    handleUploadIdCard(file) {
-      //身份证识别
-      this.$toast.loading({
-        message: '识别中...'
-      })
-      // console.log(file) //content,file
-      ocr(file.file, 0)
-        .then(json => {
-          console.log(json)
-          this.model.cardPicture = json.url
-          if (Object.keys(json.words).length == 0) return
-          this.model.ownerName = json.words.name
-          if (!this.model.beneficiary) {
-            this.model.beneficiary = json.words.name
-          }
-          this.model.cardNumber = json.words.idno
-          var sex = json.words.sex == '男' ? 1 : 2
-          this.$set(this.model, 'sex', sex) //刷新数据
-          this.$toast.clear()
-          // address: "广州市增城区荔城街滨海路8号702房"
-          // birthday: "1991-04-02"
-          // idno: "440183199104026117"
-          // name: "丁霖"
-          // nation: "汉"
-          // sex: "男"
-        })
-        .catch(() => this.$toast.clear())
-    },
-    handleUploadBusiLicense(file) {
-      //营业执照
-      console.log(file)
-    },
-    handleUploadInvoice(file) {
-      //机动车发票
-      // console.log(file)
-      this.$toast.loading({
-        message: '识别中...'
-      })
-      ocr(file.file, 5)
-        .then(json => {
-          console.log(json)
-          this.model.vehicleExtend.invoice = json.url
-          if (Object.keys(json.words).length == 0) return
-          this.model.insuredAmount = this.model.vehicleExtend.ivoiceAmount = (
-            parseFloat(json.words.price) / 10000.0
-          ).toString()
-          if (!this.model.vehicleExtend.vin) {
-            this.model.vehicleExtend.vin = json.words.frameno
-          }
-          this.model.vehicleExtend.engineNumber = json.words.engineno
-          this.model.vehicleExtend.factoryNumber = json.words.brandModel
-          this.$set(this.model.vehicleExtend, 'buyTime', json.words.date)
-          this.$toast.clear()
-          // brandModel: "GTM6491HWM"
-          // code: "144001924160"
-          // date: "2019-04-11"
-          // engineno: "4034640"
-          // frameno: "LVGEN56A9KG323491"
-          // idno: "91440106693564190B"
-          // name: "广州市颂霖广告有限公司"
-          // number: "00148453"
-          // place: "广州"
-          // price: "301800.00"
-          // tax: "34720.35"
-          // type: "多用途乘用车"
-        })
-        .catch(() => this.$toast.clear())
-    },
-    handleUploadQc(file) {
-      //车辆合格证
-      console.log(file)
-      ocr(file.file, 4).then(json => {
-        console.log(json)
-        this.model.vehicleExtend.certificate = json.url
-        if (Object.keys(json.words).length == 0) return
-        this.model.vehicleExtend.color = json.words.color
-        this.brandName = json.words.brand
-        // brand
-        // this.model.vehicleExtend.vin = json.words.frameno
-        // this.model.vehicleExtend.engineNumber = json.words.engineno
-        // this.model.vehicleExtend.factoryNumber = json.words.brandModel
-        // this.$set(this.model.vehicleExtend, 'buyTime', json.words.date)
-
-        // brand: "炫威牌/XR-V"
-        // brandModel: "DHW7182RUCRE"
-        // color: "雅韵金"
-        // date: "2018-11-04"
-        // displacement: "1799"
-        // emission: "GB18352.5-2013国V"
-        // engineno: "6069314"
-        // frameno: "LVHRU5867J5069301"
-        // fuel: "汽油"
-        // power: "100"
-        // totalPerson: "5"
-      })
-    },
-    handleUploadPayment(file) {
-      //支付证明
-      console.log(file)
-      upload(file.file).then(json => {
-        this.model.payPictures = json
-      })
-    },
-    handleUploadExtend(file) {
-      //附件图片
-      console.log(file)
-      upload(file.file).then(json => {
-        this.model.extendPicture.push(json)
-      })
-    },
-    handleSave(draft = false) {
-      this.model.draft = draft
-      var postModel = Object.assign({}, this.model)
-      postModel.installExtend = Object.assign({}, this.model.installExtend)
-      postModel.vehicleExtend = Object.assign({}, this.model.vehicleExtend)
-      postModel.extendPicture = Object.assign([], this.model.extendPicture)
-      console.log(postModel)
-      //todo 表单验证
-    },
-    handleShowVersionSelector() {
-      this.scrollTop = window.scrollY
-      this.popList.versionSelector = true
-      this.showForm = false
-    },
-    handleCloseVersionSelector() {
-      this.popList.versionSelector = false
-      this.showForm = true
-      this.$nextTick(() => {
-        window.scrollTo({ top: this.scrollTop })
-      })
-    },
-    handleVersionSelect(version) {
-      this.popList.versionSelector = false
-      this.showForm = true
-      this.model.vehicleExtend.factoryId = version.factoryId
-      this.model.vehicleExtend.factoryName = version.factory
-      this.model.vehicleExtend.brandId = version.brandId
-      this.model.vehicleExtend.brandName = version.brand
-      this.model.vehicleExtend.versionId = version.id
-      this.model.vehicleExtend.versionName = version.name
-      this.vehicleVersion = version.desc
-      //加载车型配置
-      configList(version.id).then(json => {
-        this.configList = json
-      })
-      //加载设备模板
-      deviceTemplate(this.currentShop.id, version.id).then(json => {
-        this.model.installExtend.templateDeviceId = json.id
-        this.deviceTemplate = json.deviceName
-      })
-      this.$nextTick(() => {
-        window.scrollTo({ top: this.scrollTop })
-      })
-    },
-    changeConfigList(value) {
-      //车型配置选择
-      console.log(value)
-      this.model.vehicleExtend.configId = value.id
-      this.model.vehicleExtend.configName = value.text
-      this.popList.configList = false
-    }
-  }
-}
+import './create.less'
+import { createOrder } from './create.js'
+export default createOrder
 </script>
-<style>
-.d-error {
-  background-color: #ff976a;
-}
-.d-error .van-field__control {
-  color: #ee0a24;
-  -webkit-text-fill-color: #ee0a24;
-}
-.d-error .d-input-unit {
-  background-color: transparent;
-}
-
-.d-warning {
-  background-color: #ffb;
-}
-.d-warning .d-input-unit {
-  background-color: transparent;
-}
-.d-warning .van-field__control {
-  color: #f82;
-  -webkit-text-fill-color: #f82;
-}
-.van-uploader {
-  padding: 10px 0;
-}
-.van-uploader__preview {
-  margin: 0 1.2rem 1.2rem 0;
-}
-.van-radio {
-  margin-left: 0.6rem;
-}
-.d-header {
-  z-index: 2 !important;
-  background-color: #fefefe;
-}
-.d-form {
-  margin: 46px 0;
-}
-.d-input-unit {
-  padding: 0 0.5rem;
-  background-color: #eee;
-}
-.d-actions {
-  text-align: right;
-  background-color: #fefefe;
-  padding: 1rem;
-}
-.d-actions .van-button {
-  margin-left: 0.5rem;
-}
-.d-version-selector {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  transform: none;
-  top: 0;
-  left: 0;
-}
-</style>

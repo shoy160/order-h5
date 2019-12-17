@@ -73,6 +73,16 @@ const order = {
         callback && callback.call()
       })
     },
+    getFinances({ commit, state }, callback) {
+      if (state.finances.length > 0) {
+        callback && callback.call()
+        return
+      }
+      unitList(2).then(json => {
+        commit('SET_FINANCES', json)
+        callback && callback.call()
+      })
+    },
     getTypes({ commit, state }, payload) {
       var type = payload.type || 4
       var callback = payload.callback

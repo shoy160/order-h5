@@ -81,7 +81,14 @@ export const unitList = (type, page = 1) => {
         var units = []
         for (var index in json.data) {
           var item = json.data[index]
-          units.push({ id: item.id, text: item.name })
+          units.push({
+            id: item.id,
+            text: item.name,
+            remark:
+              item.financeExtend && item.financeExtend.financeRemark
+                ? item.financeExtend.financeRemark
+                : ''
+          })
         }
         return units
       }
@@ -107,14 +114,15 @@ export const versionTree = (type = 4) => {
  * @param {*} versionId
  * @param {*} all
  */
-export const configList = (versionId, all = false) => {
+export const configList = versionId => {
+  // var onsale = !all
   return ajax
     .get(`${authHost}/vehicle/basic/config`, {
       params: {
         versionId: versionId,
         page: 1,
         size: 500,
-        onsale: !all
+        nosale: ''
       }
     })
     .then(json => {
@@ -146,7 +154,7 @@ export const icbSaleList = shopId => {
         var list = []
         for (var index in json.data) {
           var item = json.data[index]
-          list.push({ id: item.id, text: item.name, mobile: item.mobile })
+          list.push({ id: item.id, text: item.name || '', mobile: item.mobile })
         }
         return list
       }
@@ -174,9 +182,29 @@ export const saleList = (shopId, page = 1) => {
         var list = []
         for (var index in json.data) {
           var item = json.data[index]
-          list.push({ id: item.id, text: item.name, mobile: item.mobile })
+          list.push({ id: item.id, text: item.name || '', mobile: item.mobile })
         }
         return list
+      }
+      return json
+    })
+}
+
+/**
+ * 金融备注
+ * @param {*} shopId
+ * @param {*} financeId
+ */
+export const financeRemark = (shopId, financeId) => {
+  return ajax
+    .get(`${authHost}/shop/${shopId}`, {
+      params: {
+        financeId: financeId
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        return json.data.financeRemark1
       }
       return json
     })
