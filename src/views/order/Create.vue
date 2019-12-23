@@ -72,6 +72,7 @@
             :max-count="1"
             v-model="previewBusiLicense"
             :after-read="handleUploadBusiLicense"
+            :before-delete="handleDeleteBusiLicense"
           />
         </van-field>
         <van-field
@@ -123,6 +124,7 @@
             :max-count="1"
             v-model="previewIdCard"
             :after-read="handleUploadIdCard"
+            :before-delete="handleDeleteIdCard"
           />
         </van-field>
         <van-field
@@ -192,6 +194,7 @@
             :max-count="1"
             v-model="previewInvoice"
             :after-read="handleUploadInvoice"
+            :before-delete="handleDeleteInvoice"
           />
         </van-field>
         <van-field
@@ -205,6 +208,7 @@
             :max-count="1"
             v-model="previewQc"
             :after-read="handleUploadQc"
+            :before-delete="handleDeleteQc"
           />
         </van-field>
         <van-field label="车辆类型" input-align="right">
@@ -264,7 +268,6 @@
           label="车架号"
           required
           input-align="right"
-          clearable
           :right-icon="ocrs.vins.length > 0 ? 'arrow-down' : ''"
           placeholder="请输入车架号"
           @click-right-icon="showPopup('vins')"
@@ -274,7 +277,6 @@
           label="发动机号"
           required
           input-align="right"
-          clearable
           :right-icon="ocrs.engines.length > 0 ? 'arrow-down' : ''"
           placeholder="请输入发动机号"
           @click-right-icon="showPopup('engines')"
@@ -284,7 +286,6 @@
           label="厂牌型号"
           required
           input-align="right"
-          clearable
           :right-icon="ocrs.factories.length > 0 ? 'arrow-down' : ''"
           placeholder="请输入厂牌型号"
           @click-right-icon="showPopup('factories')"
@@ -556,6 +557,7 @@
             :max-count="1"
             v-model="previewPayment"
             :after-read="handleUploadPayment"
+            :before-delete="handleDeletePayment"
           />
         </van-field>
         <van-field
@@ -646,8 +648,9 @@
           <van-uploader
             slot="input"
             :max-count="5"
-            v-model="model.extendPicture"
+            v-model="previewExtend"
             :after-read="handleUploadExtend"
+            :before-delete="handleDeleteExtend"
           />
         </van-field>
       </van-cell-group>

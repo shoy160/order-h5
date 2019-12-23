@@ -242,8 +242,8 @@ export default {
       detail(id).then(json => {
         if (json.policyFile) {
           this.isShowPdf = true
-          this.pdfUrl = json.policyFile
           this.pdfName = `icb_${policy}.pdf`
+          this.pdfUrl = json.policyFile          
         }
       })
     },

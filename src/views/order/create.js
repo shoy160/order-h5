@@ -396,21 +396,20 @@ export const createOrder = {
         this.$toast.loading({
           message: '识别中...'
         })
-        ocr(file.file, ocrType)
+        return ocr(file.file, ocrType)
           .then(json => {
-            console.log(json)
+            // console.log(json)
             this.model.cardPicture = json.url
-            if (Object.keys(json.words).length == 0) {
-              return
-            }
-            this.model.ownerName = json.words.name
-            if (!this.model.beneficiary) {
-              this.model.beneficiary = json.words.name
-            }
-            this.model.cardNumber = json.words.idno
-            if (json.words.sex) {
-              var sex = json.words.sex == '男' ? 1 : 2
-              this.$set(this.model, 'sex', sex) //刷新数据
+            if (Object.keys(json.words).length > 0) {
+              this.model.ownerName = json.words.name
+              if (!this.model.beneficiary) {
+                this.model.beneficiary = json.words.name
+              }
+              this.model.cardNumber = json.words.idno
+              if (json.words.sex) {
+                var sex = json.words.sex == '男' ? 1 : 2
+                this.$set(this.model, 'sex', sex) //刷新数据
+              }
             }
             this.$toast.clear()
             // address: "广州市增城区荔城街滨海路8号702房"
@@ -420,22 +419,77 @@ export const createOrder = {
             // nation: "汉"
             // sex: "男"
           })
-          .catch(() => this.$toast.clear())
+          .catch(e => {
+            this.$toast.clear()
+            return Promise.reject(e)
+          })
       } else {
         this.$toast.loading({
           message: '上传中...'
         })
-        upload(file.file)
+        return upload(file.file)
           .then(json => {
             this.model.cardPicture = json
             this.$toast.clear()
           })
-          .catch(() => this.$toast.clear())
+          .catch(e => {
+            this.$toast.clear()
+            return Promise.reject(e)
+          })
       }
+    },
+    handleDeleteIdCard() {
+      //删除证件照
+      return Dialog.confirm({ message: '确定要删除证件照？' }).then(() => {
+        this.model.vehicleExtend.cardPicture = ''
+      })
     },
     handleUploadBusiLicense(file) {
       //营业执照
-      console.log(file)
+      // console.log(file)
+      var loading = this.$toast.loading({
+        message: '识别中...'
+      })
+      return ocr(file.file, 3)
+        .then(json => {
+          // console.log(json)
+          this.model.cardPicture = json.url
+          if (Object.keys(json.words).length > 0) {
+            if (json.words.expired) {
+              var expired = new Date(
+                json.words.expired
+                  .replace('年', '/')
+                  .replace('月', '/')
+                  .replace('日', '')
+              )
+              if (expired < new Date()) {
+                loading = null
+                this.$toast.fail('该营业执照已过期')
+                return Promise.reject('证件过期')
+              }
+            }
+            this.model.ownerName = json.words.name
+            this.model.cardNumber = json.words.number
+          }
+          // address: "苏州市经济开发区百丽花园223"
+          // creditCode: "556344445002102"
+          // expired: "2015年12月20日"
+          // legal: "于松仙"
+          // name: "苏州万花筒广告有限公司"
+          // number: "398749230833865123"
+          // type: "无"
+          loading.clear()
+        })
+        .catch(e => {
+          loading && loading.clear()
+          return Promise.reject(e)
+        })
+    },
+    handleDeleteBusiLicense() {
+      //删除营业执照
+      return Dialog.confirm({ message: '确定要删除营业执照？' }).then(() => {
+        this.model.cardPicture = ''
+      })
     },
     handleUploadInvoice(file) {
       //机动车发票
@@ -443,9 +497,9 @@ export const createOrder = {
       this.$toast.loading({
         message: '识别中...'
       })
-      ocr(file.file, 5)
+      return ocr(file.file, 5)
         .then(json => {
-          console.log(json)
+          // console.log(json)
           this.model.vehicleExtend.invoice = json.url
           if (Object.keys(json.words).length == 0) return
           this.model.insuredAmount = this.model.vehicleExtend.ivoiceAmount = (
@@ -475,7 +529,16 @@ export const createOrder = {
           // tax: "34720.35"
           // type: "多用途乘用车"
         })
-        .catch(() => this.$toast.clear())
+        .catch(e => {
+          this.$toast.clear()
+          return Promise.reject(e)
+        })
+    },
+    handleDeleteInvoice() {
+      //删除机动车发票
+      return Dialog.confirm({ message: '确定要删除机动车发票？' }).then(() => {
+        this.model.vehicleExtend.invoice = ''
+      })
     },
     handleUploadQc(file) {
       //车辆合格证
@@ -483,7 +546,7 @@ export const createOrder = {
         message: '识别中...'
       })
       // console.log(file)
-      ocr(file.file, 4)
+      return ocr(file.file, 4)
         .then(json => {
           console.log(json)
           this.model.vehicleExtend.certificate = json.url
@@ -510,9 +573,16 @@ export const createOrder = {
           // power: "100"
           // totalPerson: "5"
         })
-        .catch(() => {
+        .catch(e => {
           this.$toast.clear()
+          return Promise.reject(e)
         })
+    },
+    handleDeleteQc() {
+      //删除车辆合格证
+      return Dialog.confirm({ message: '确定要删除车辆合格证？' }).then(() => {
+        this.model.vehicleExtend.certificate = ''
+      })
     },
     handleUploadPayment(file) {
       //支付证明
@@ -520,12 +590,21 @@ export const createOrder = {
       this.$toast.loading({
         message: '上传中...'
       })
-      upload(file.file)
+      return upload(file.file)
         .then(json => {
           this.model.payPictures = json
           this.$toast.clear()
         })
-        .catch(() => this.$toast.clear())
+        .catch(e => {
+          this.$toast.clear()
+          return Promise.reject(e)
+        })
+    },
+    handleDeletePayment() {
+      //删除支付证明
+      return Dialog.confirm({ message: '确定要删除支付证明？' }).then(() => {
+        this.model.payPictures = ''
+      })
     },
     handleUploadExtend(file) {
       //附件图片
@@ -533,9 +612,20 @@ export const createOrder = {
       this.$toast.loading({
         message: '上传中...'
       })
-      upload(file.file).then(json => {
-        this.model.extendPicture.push(json)
-        this.$toast.clear()
+      return upload(file.file)
+        .then(json => {
+          this.model.extendPicture.push(json)
+          this.$toast.clear()
+        })
+        .catch(e => {
+          this.$toast.clear()
+          return Promise.reject(e)
+        })
+    },
+    handleDeleteExtend(file, detail) {
+      //删除附件图片
+      return Dialog.confirm({ message: '确定要删除附件图片？' }).then(() => {
+        this.model.extendPicture.splice(detail.index, 1)
       })
     },
     handleSave(draft = false) {

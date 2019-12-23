@@ -81,6 +81,7 @@ export const useMap = () => {
 }
 
 const download = (url, filename) => {
+  console.log(url, filename)
   // 创建隐藏<a>标签进行下载
   var tempLink = document.createElement('a')
   tempLink.style.display = 'none'
@@ -89,7 +90,6 @@ const download = (url, filename) => {
   if (typeof tempLink.download === 'undefined') {
     tempLink.setAttribute('target', '_blank')
   }
-  console.log(tempLink)
   document.body.appendChild(tempLink)
   tempLink.click()
   document.body.removeChild(tempLink)
@@ -113,9 +113,11 @@ export const downloadFile = (url, filename) => {
             type: 'application/pdf'
           })
           if (typeof window.navigator.msSaveBlob !== 'undefined') {
+            console.log('save blob')
             window.navigator.msSaveBlob(blob, filename)
           } else {
             var blobURL = window.URL.createObjectURL(blob)
+            // console.log(blobURL, filename)
             download(blobURL, filename)
             window.URL.revokeObjectURL(blobURL)
           }

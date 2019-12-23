@@ -3,6 +3,7 @@
     <van-popup
       v-model="showPopup"
       closeable
+      :page="1"
       :style="{ width: '95%' }"
       @closed="handleClosed"
     >
@@ -18,6 +19,9 @@
       <van-button icon="down" type="primary" size="small" @click="downloadPDF">
         下载
       </van-button>
+      <a :href="src" :download="name" target="_blank" id="download_link">
+        点击下载
+      </a>
     </div>
   </div>
 </template>
@@ -45,6 +49,9 @@ export default {
   watch: {
     show(val) {
       this.showPopup = val
+    },
+    src() {
+      this.src && this.downloadPDF()
     }
   },
   methods: {
