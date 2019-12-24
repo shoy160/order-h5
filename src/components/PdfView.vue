@@ -16,11 +16,17 @@
       <!-- <van-button size="small" icon="close" @click="handleClosed">
         关闭
       </van-button> -->
-      <van-button icon="down" type="primary" size="small" @click="downloadPDF">
+      <!-- <van-button icon="down" type="primary" size="small" @click="downloadPDF">
         下载
-      </van-button>
-      <a :href="src" :download="name" target="_blank" id="download_link">
-        点击下载
+      </van-button> -->
+      <a
+        :href="src"
+        class="van-button van-button--warning van-button--small"
+        :download="name"
+        target="_blank"
+        id="download_link"
+      >
+        下载保单
       </a>
     </div>
   </div>
@@ -56,11 +62,12 @@ export default {
   },
   methods: {
     handleLoaded() {
-      console.log('loaded')
+      // console.log('loaded')
+      this.$emit('loaded')
       this.loading = false
     },
     handleProgress(num) {
-      console.log(num)
+      this.$emit('progress',num)
     },
     handleClosed() {
       this.showPopup = false

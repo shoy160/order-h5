@@ -10,9 +10,18 @@
       @click-left="handleBack"
     >
       <div v-if="model.isElectronPolicy && model.state == 40" slot="right">
-        <van-button size="small" type="warning" @click="handleDownload">
+        <a
+          :href="model.policyFile"
+          class="van-button van-button--warning van-button--small"
+          :download="name"
+          target="_blank"
+          id="download_link"
+        >
           下载保单
-        </van-button>
+        </a>
+        <!-- <van-button size="small" type="warning" :url="model.policyFile">
+          下载保单
+        </van-button> -->
       </div>
     </van-nav-bar>
     <div class="d-container">
@@ -294,7 +303,10 @@
               <van-row>
                 <van-col span="8"><label>按揭期限:</label></van-col>
                 <van-col span="16">
-                  <span> {{ model.vehicleExtend.mortgageMonth }}月 </span>
+                  <span>
+                    {{ model.vehicleExtend.mortgageMonth }}
+                    <small>月</small>
+                  </span>
                 </van-col>
               </van-row>
               <van-row>
