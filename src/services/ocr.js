@@ -53,7 +53,8 @@ export const upload = (file, type = 1) => {
           param.append('fileBase64', val)
           param.append('fileName', filename)
         } else {
-          param.append('file', val)
+          filename = 'file'
+          param.append(filename, val)
         }
         ajax
           .post(`${fileHost}/uploader`, param, {

@@ -1,6 +1,6 @@
 import Menus from '@/components/Menus'
 import VersionSelector from '@/components/VersionSelector'
-import { templates, deviceTemplate } from '@/services/order'
+import { templates, deviceTemplate, create } from '@/services/order'
 import {
   icbSaleList,
   saleList,
@@ -98,6 +98,7 @@ export const createOrder = {
         engines: false,
         factories: false
       },
+      currentPop: '',
       ocrs: {
         vins: [], //车架号
         engines: [], //发动机号
@@ -142,7 +143,8 @@ export const createOrder = {
       sourceList: {
         saleList: [],
         finances: [],
-        configList: []
+        configList: [],
+        shops: []
       },
       icbSaleList: [],
       saleList: [],
@@ -190,14 +192,19 @@ export const createOrder = {
   methods: {
     showPopup(type, status = true) {
       this.popList[type] = status
-      this.keyword = ''
-      if (type === 'finances') {
-        this.$set(this.sourceList, type, this.finances)
-      } else {
-        if (this.hasOwnProperty(type)) {
-          this.$set(this.sourceList, type, this[type])
+      if (!this.currentPop || this.currentPop !== type) {
+        this.keyword = ''
+        if (type === 'finances') {
+          this.$set(this.sourceList, type, this.finances)
+        } else if (type === 'shops') {
+          this.$set(this.sourceList, type, this.shops)
+        } else {
+          if (this.hasOwnProperty(type)) {
+            this.$set(this.sourceList, type, this[type])
+          }
         }
       }
+      this.currentPop = type
     },
     changeOrderType(checked) {
       if (checked) {
@@ -249,7 +256,7 @@ export const createOrder = {
     },
     changeIcbSale(value) {
       this.currentIcbSale = value
-      this.model.icbSaleId = value.id
+      this.model.acbSaleId = value.id
       if (this.model.installExtend.contractType === 0) {
         this.model.installExtend.contractName = value.text
         this.model.installExtend.contractMobile = value.mobile
@@ -419,9 +426,13 @@ export const createOrder = {
             // nation: "汉"
             // sex: "男"
           })
-          .catch(e => {
-            this.$toast.clear()
-            return Promise.reject(e)
+          .catch(() => {
+            this.$toast({
+              type: 'fail',
+              message: '证件照识别失败',
+              position: 'bottom',
+              duration: 2000
+            })
           })
       } else {
         this.$toast.loading({
@@ -432,9 +443,13 @@ export const createOrder = {
             this.model.cardPicture = json
             this.$toast.clear()
           })
-          .catch(e => {
-            this.$toast.clear()
-            return Promise.reject(e)
+          .catch(() => {
+            this.$toast({
+              type: 'fail',
+              message: '证件照上传失败',
+              position: 'bottom',
+              duration: 2000
+            })
           })
       }
     },
@@ -465,7 +480,7 @@ export const createOrder = {
               if (expired < new Date()) {
                 loading = null
                 this.$toast.fail('该营业执照已过期')
-                return Promise.reject('证件过期')
+                return
               }
             }
             this.model.ownerName = json.words.name
@@ -480,9 +495,13 @@ export const createOrder = {
           // type: "无"
           loading.clear()
         })
-        .catch(e => {
-          loading && loading.clear()
-          return Promise.reject(e)
+        .catch(() => {
+          this.$toast({
+            type: 'fail',
+            message: '营业执照识别失败',
+            position: 'bottom',
+            duration: 2000
+          })
         })
     },
     handleDeleteBusiLicense() {
@@ -500,6 +519,7 @@ export const createOrder = {
       return ocr(file.file, 5)
         .then(json => {
           // console.log(json)
+          this.$toast.clear()
           this.model.vehicleExtend.invoice = json.url
           if (Object.keys(json.words).length == 0) return
           this.model.insuredAmount = this.model.vehicleExtend.ivoiceAmount = (
@@ -515,7 +535,6 @@ export const createOrder = {
             'buyTime',
             toDate(json.words.date)
           )
-          this.$toast.clear()
           // brandModel: "GTM6491HWM"
           // code: "144001924160"
           // date: "2019-04-11"
@@ -529,9 +548,13 @@ export const createOrder = {
           // tax: "34720.35"
           // type: "多用途乘用车"
         })
-        .catch(e => {
-          this.$toast.clear()
-          return Promise.reject(e)
+        .catch(() => {
+          this.$toast({
+            type: 'fail',
+            message: '机动车发票/合同识别失败',
+            position: 'bottom',
+            duration: 2000
+          })
         })
     },
     handleDeleteInvoice() {
@@ -548,19 +571,19 @@ export const createOrder = {
       // console.log(file)
       return ocr(file.file, 4)
         .then(json => {
-          console.log(json)
+          // console.log(json)
           this.model.vehicleExtend.certificate = json.url
-          if (Object.keys(json.words).length == 0) return
-          this.model.vehicleExtend.color = json.words.color
-          this.brandName = json.words.brand
-          this.fillOcr(
-            json.words.frameno,
-            json.words.engineno,
-            json.words.brandModel
-          )
+          if (Object.keys(json.words).length > 0) {
+            this.model.vehicleExtend.color = json.words.color
+            this.brandName = json.words.brand
+            this.fillOcr(
+              json.words.frameno,
+              json.words.engineno,
+              json.words.brandModel
+            )
+          }
           this.$toast.clear()
           // this.$set(this.model.vehicleExtend, 'buyTime', json.words.date)
-
           // brand: "炫威牌/XR-V"
           // brandModel: "DHW7182RUCRE"
           // color: "雅韵金"
@@ -573,9 +596,13 @@ export const createOrder = {
           // power: "100"
           // totalPerson: "5"
         })
-        .catch(e => {
-          this.$toast.clear()
-          return Promise.reject(e)
+        .catch(() => {
+          this.$toast({
+            type: 'fail',
+            message: '车辆合格证识别失败',
+            position: 'bottom',
+            duration: 2000
+          })
         })
     },
     handleDeleteQc() {
@@ -595,9 +622,13 @@ export const createOrder = {
           this.model.payPictures = json
           this.$toast.clear()
         })
-        .catch(e => {
-          this.$toast.clear()
-          return Promise.reject(e)
+        .catch(() => {
+          this.$toast({
+            type: 'fail',
+            message: '支付证明上传失败',
+            position: 'bottom',
+            duration: 2000
+          })
         })
     },
     handleDeletePayment() {
@@ -608,7 +639,6 @@ export const createOrder = {
     },
     handleUploadExtend(file) {
       //附件图片
-      // console.log(file)
       this.$toast.loading({
         message: '上传中...'
       })
@@ -617,9 +647,13 @@ export const createOrder = {
           this.model.extendPicture.push(json)
           this.$toast.clear()
         })
-        .catch(e => {
-          this.$toast.clear()
-          return Promise.reject(e)
+        .catch(() => {
+          this.$toast({
+            type: 'fail',
+            message: '附加图片上传失败',
+            position: 'bottom',
+            duration: 2000
+          })
         })
     },
     handleDeleteExtend(file, detail) {
@@ -631,22 +665,37 @@ export const createOrder = {
     handleSave(draft = false) {
       Dialog.confirm({
         message: draft ? '确认保存草稿？' : '确认提交订单？'
-      })
-        .then(() => {
-          //提交
-          this.model.draft = draft
-          var postModel = Object.assign({}, this.model)
-          postModel.installExtend = Object.assign({}, this.model.installExtend)
-          postModel.vehicleExtend = Object.assign({}, this.model.vehicleExtend)
-          postModel.extendPicture = Object.assign([], this.model.extendPicture)
-          //时间处理
-          postModel.serviceStart = +postModel.serviceStart
-          postModel.serviceEnd = +postModel.serviceEnd
-          postModel.vehicleExtend.buyTime = +postModel.vehicleExtend.buyTime
-          console.log(postModel)
-          //todo 表单验证
+      }).then(() => {
+        //提交
+        this.model.draft = draft
+        var postModel = Object.assign({}, this.model)
+        postModel.installExtend = Object.assign({}, this.model.installExtend)
+        postModel.vehicleExtend = Object.assign({}, this.model.vehicleExtend)
+        postModel.extendPicture = Object.assign([], this.model.extendPicture)
+        //todo 表单验证
+        var loading = this.$toast.loading({
+          message: '订单提交中...'
         })
-        .catch(() => {})
+        create(postModel)
+          .then(() => {
+            loading.clear()
+            Dialog.confirm({ message: '创建成功,是否继续录单？' })
+              .then(() => {
+                this.$router.go(0)
+              })
+              .catch(() => {
+                this.$router.push('/order/list')
+              })
+          })
+          .catch(() => {
+            this.$toast({
+              type: 'fail',
+              message: '创建订单失败',
+              position: 'bottom',
+              duration: 2000
+            })
+          })
+      })
     },
     handleShowVersionSelector() {
       //车型选择器
@@ -690,7 +739,7 @@ export const createOrder = {
     },
     changeConfigList(value) {
       //车型配置选择
-      console.log(value)
+      // console.log(value)
       this.model.vehicleExtend.configId = value.id
       this.model.vehicleExtend.configName = value.text
       this.popList.configList = false

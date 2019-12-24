@@ -71,3 +71,19 @@ export const policyJpg = id => {
     }
   })
 }
+
+/**
+ * 创建订单
+ * @param {*} model
+ */
+export const create = model => {
+  //时间处理
+  model.serviceStart = +model.serviceStart
+  model.serviceEnd = +model.serviceEnd
+  model.vehicleExtend.buyTime = +model.vehicleExtend.buyTime
+  //金额处理
+  model.insuredAmount = model.insuredAmount * 10000
+  model.vehicleExtend.ivoiceAmount = model.vehicleExtend.ivoiceAmount * 10000
+  console.log(model)
+  return ajax.post('/order', model)
+}

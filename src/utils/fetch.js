@@ -5,6 +5,8 @@ import { Toast } from 'vant'
 import router from '@/router'
 
 Vue.use(Toast)
+Toast.setDefaultOptions('loading', { forbidClick: true, duration: 0 })
+// Toast.allowMultiple()
 
 // 创建axios实例
 const $axios = axios.create({
@@ -58,7 +60,12 @@ $axios.interceptors.response.use(
     return res.data
   },
   error => {
-    //Toast(error.message)
+    Toast({
+      type: 'fail',
+      message: error.message,
+      position: 'bottom',
+      duration: 2000
+    })
     return Promise.reject({
       status: -1,
       message: error.message

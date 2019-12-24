@@ -131,3 +131,29 @@ export const downloadFile = (url, filename) => {
     }
   })
 }
+
+export const idTypes = [
+  { type: 1, text: '身份证' },
+  { type: 2, text: '驾驶证' },
+  { type: 3, text: '军官证' },
+  { type: 4, text: '护照' },
+  { type: 6, text: '港澳通行证' }
+]
+
+export const contactTypes = ['家人', '同事', '朋友', '其他']
+
+export const paymodes = [
+  { type: 1, text: '支付宝' },
+  { type: 2, text: '微信' },
+  { type: 3, text: '对公转账' },
+  { type: 4, text: '成都银行扫码' },
+  { type: 5, text: 'POS机' },
+  { type: 6, text: '月结' }
+]
+export const installContacts = [
+  { type: 0, text: '驻店员' },
+  { type: 1, text: '销售顾问' },
+  { type: 2, text: '车主' },
+  { type: 3, text: '备用联系人' },
+  { type: -1, text: '其他' }
+]

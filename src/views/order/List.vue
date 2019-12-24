@@ -24,25 +24,7 @@
           :class="'d-status-' + item.state"
         >
           <div class="d-content">
-            <div class="d-tags">
-              <van-tag type="primary" plain>{{
-                item.orderType == 0 ? 'i车保' : '凡车汇'
-              }}</van-tag>
-              <van-tag color="#ff5400" plain>{{
-                item.ownerType == 1 ? '个人' : '企业'
-              }}</van-tag>
-              <!-- <van-tag color="#dd85ee" plain v-if="item.isMortgage">摩托</van-tag> -->
-              <van-tag type="success" plain v-if="item.isElectronPolicy"
-                >电子</van-tag
-              >
-              <van-tag color="#7232dd" plain v-if="item.isBuyTradition"
-                >传统</van-tag
-              >
-              <van-tag type="warning" plain v-if="item.isMortgage"
-                >按揭</van-tag
-              >
-              <van-tag type="danger" plain v-if="item.isUsedCar">二手</van-tag>
-            </div>
+            <order-tags :model="item" />
             <div class="d-item">
               <label>车架号:</label>
               <span>{{ item.vin }}</span>
@@ -77,7 +59,7 @@
             </div>
           </div>
           <div slot="footer" class="d-footer">
-            <van-button size="small" disabled @click="handleDetail(item.id)"
+            <van-button size="small" @click="handleDetail(item.id)"
               >详情</van-button
             >
             <van-button
@@ -107,6 +89,7 @@
 <script>
 import Menus from '@/components/Menus'
 import PdfView from '@/components/PdfView'
+import OrderTags from '@/components/OrderTags'
 import Vue from 'vue'
 import {
   PullRefresh,
@@ -138,7 +121,8 @@ export default {
   name: 'orderList',
   components: {
     Menus,
-    PdfView
+    PdfView,
+    OrderTags
   },
   data() {
     return {
@@ -232,18 +216,19 @@ export default {
       })
     },
     handleDetail(id) {
-      this.$toast({
-        message: '敬请期待',
-        position: 'bottom'
-      })
-      console.log(id)
+      this.$router.push({ name: 'OrderDetail', params: { id } })
+      // this.$toast({
+      //   message: '敬请期待',
+      //   position: 'bottom'
+      // })
+      // console.log(id)
     },
     handlePolicy(id, policy) {
       detail(id).then(json => {
         if (json.policyFile) {
           this.isShowPdf = true
           this.pdfName = `icb_${policy}.pdf`
-          this.pdfUrl = json.policyFile          
+          this.pdfUrl = json.policyFile
         }
       })
     },
@@ -264,9 +249,7 @@ export default {
 .van-panel {
   margin-bottom: 0.5rem;
 }
-.van-tag {
-  margin-right: 0.3rem;
-}
+
 .van-panel__footer {
   background-color: #f9f9f9;
 }
@@ -278,9 +261,6 @@ export default {
 }
 .d-content {
   padding: 20px;
-}
-.d-tags {
-  margin-bottom: 1rem;
 }
 .d-item {
   color: #666;

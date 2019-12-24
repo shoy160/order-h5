@@ -14,6 +14,11 @@ const routes = [
     component: () => import('../views/account/Index.vue')
   },
   {
+    path: '/',
+    name: 'Home',
+    redirect: { name: 'OrderList' }
+  },
+  {
     path: '/order/list',
     name: 'OrderList',
     component: () => import('../views/order/List.vue')
@@ -24,19 +29,19 @@ const routes = [
     component: () => import('../views/order/Create.vue')
   },
   {
-    path: '/404',
-    name: 'NotFound',
-    component: () => import('../views/errors/404.vue')
+    path: '/order/:id',
+    name: 'OrderDetail',
+    component: () => import('../views/order/Detail.vue')
   },
   {
-    path: '',
-    redirect: '/order/list',
-    hidden: true
+    path: '*',
+    name: 'NotFound',
+    component: () => import('../views/errors/404.vue')
   }
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: 'hash',
   base: process.env.BASE_URL,
   routes
 })

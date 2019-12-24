@@ -1,9 +1,9 @@
 <template>
   <div>
     <van-nav-bar title="创建订单" :fixed="true" class="d-header" :z-index="10">
-      <van-button slot="left" size="small" @click="handleSave(true)"
+      <!-- <van-button slot="left" size="small" @click="handleSave(true)"
         >草稿</van-button
-      >
+      > -->
       <van-button
         slot="right"
         size="small"
@@ -76,30 +76,35 @@
           />
         </van-field>
         <van-field
+          v-model="model.cardNumber"
           label="证件号码"
           required
           input-align="right"
           placeholder="请输入证件号码"
         />
         <van-field
+          v-model="model.ownerName"
           label="企业名称"
           required
           input-align="right"
           placeholder="请输入企业名称"
         />
         <van-field
+          v-model="model.ownerMobile"
           label="联系电话"
           required
           input-align="right"
           placeholder="请输入联系电话"
         />
         <van-field
+          v-model="model.driverName"
           label="驾驶人"
           required
           input-align="right"
           placeholder="请输入驾驶人"
         />
         <van-field
+          v-model="model.driverMobile"
           label="驾驶人电话"
           required
           type="number"
@@ -178,6 +183,7 @@
           v-model="model.spareMobile"
           label="联系人电话"
           required
+          type="number"
           input-align="right"
           placeholder="请输入备用联系人电话"
         />
@@ -580,8 +586,8 @@
               @change="changeInstallAddressType"
             >
               <van-row type="flex" justify="end">
-                <van-radio :name="1">店内</van-radio>
-                <van-radio :name="2">上门</van-radio>
+                <van-radio :name="0">店内</van-radio>
+                <van-radio :name="1">上门</van-radio>
               </van-row>
             </van-radio-group>
           </van-field>
@@ -660,11 +666,25 @@
       <van-picker
         show-toolbar
         title="选择经销商"
-        :columns="shops"
+        :columns="sourceList.shops"
         :value="model.shopName"
         @cancel="showPopup('shops', false)"
         @confirm="changeShop"
-      />
+      >
+        <van-search
+          v-if="shops.length > 5"
+          v-model="keyword"
+          clearable
+          slot="title"
+          placeholder="经销商"
+          show-action
+          @search="handlePickerSearch('shops')"
+        >
+          <div slot="action" @click="handlePickerSearch('shops')">
+            搜索
+          </div>
+        </van-search>
+      </van-picker>
     </van-popup>
     <!--驻店员-->
     <van-popup v-model="popList.icbSales" position="bottom">

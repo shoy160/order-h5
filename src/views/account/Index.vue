@@ -36,7 +36,7 @@ export default {
   methods: {
     handleLogout() {
       removeTicket()
-      this.$router.replace('/login')
+      this.$router.go(0)
     }
   }
 }

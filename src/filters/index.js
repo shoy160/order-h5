@@ -1,4 +1,7 @@
 export { formatDate } from 'singerjs'
+
+export { time, attr } from '@/utils/filters'
+
 export const formatMoney = money => {
   return (money * 1.0).toFixed(1)
 }

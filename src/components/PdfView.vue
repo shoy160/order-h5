@@ -49,10 +49,10 @@ export default {
   watch: {
     show(val) {
       this.showPopup = val
-    },
-    src() {
-      this.src && this.downloadPDF()
     }
+    // src() {
+    //   this.src && this.downloadPDF()
+    // }
   },
   methods: {
     handleLoaded() {

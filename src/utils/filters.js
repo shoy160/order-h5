@@ -1,8 +1,6 @@
-import {
-  toDate
-} from './index'
+import { toDate } from './index'
 
-const _formatDate = function (date, format) {
+const _formatDate = function(date, format) {
   date = toDate(date)
   if (!(date instanceof Date)) {
     return date
@@ -50,6 +48,10 @@ export function time(date, format = 'yyyy-MM-dd hh:mm') {
  */
 export function attr(value, obj, step = -1) {
   if (obj instanceof Array) {
+    var index = obj.findIndex(t => t.type === value)
+    if (index >= 0) {
+      return obj[index].text
+    }
     return obj[parseInt(value) + step]
   }
   return obj.hasOwnProperty(value) ? obj[value] : value
