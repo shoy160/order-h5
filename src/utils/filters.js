@@ -1,4 +1,4 @@
-import { toDate } from './index'
+import { toDate, orderStates } from './index'
 
 const _formatDate = function(date, format) {
   date = toDate(date)
@@ -38,6 +38,10 @@ const _formatDate = function(date, format) {
  */
 export function time(date, format = 'yyyy-MM-dd hh:mm') {
   return _formatDate(date, format)
+}
+
+export function orderState(value) {
+  return attr(value, orderStates)
 }
 
 /**

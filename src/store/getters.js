@@ -1,5 +1,6 @@
 const getters = {
   isLoading: state => state.app.isLoading,
+  keyword: state => state.app.keyword,
   token: state => state.user.token,
   userId: state => state.user.id,
   userAvatar: state => state.user.avatar,

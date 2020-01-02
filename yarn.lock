@@ -7953,6 +7953,11 @@ vconsole@^3.3.4:
   resolved "https://registry.npm.taobao.org/vconsole/download/vconsole-3.3.4.tgz#a7dacd8887b3d3e902e8d18425cda56c34e77f51"
   integrity sha1-p9rNiIez0+kC6NGEJc2lbDTnf1E=
 
+vee-validate@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.npm.taobao.org/vee-validate/download/vee-validate-3.2.1.tgz#053ab09fe6676a00f8c1a0c428d88c0acccde7ec"
+  integrity sha1-BTqwn+ZnagD4waDEKNiMCszN5+w=
+
 vendors@^1.0.0:
   version "1.0.3"
   resolved "https://registry.npm.taobao.org/vendors/download/vendors-1.0.3.tgz#a6467781abd366217c050f8202e7e50cc9eef8c0"

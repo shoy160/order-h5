@@ -81,7 +81,7 @@ export const useMap = () => {
 }
 
 const download = (url, filename) => {
-  console.log(url, filename)
+  // console.log(url, filename)
   // 创建隐藏<a>标签进行下载
   var tempLink = document.createElement('a')
   tempLink.style.display = 'none'
@@ -113,7 +113,7 @@ export const downloadFile = (url, filename) => {
             type: 'application/pdf'
           })
           if (typeof window.navigator.msSaveBlob !== 'undefined') {
-            console.log('save blob')
+            // console.log('save blob')
             window.navigator.msSaveBlob(blob, filename)
           } else {
             var blobURL = window.URL.createObjectURL(blob)
@@ -125,7 +125,7 @@ export const downloadFile = (url, filename) => {
         })
         .catch(err => {
           //调试阶段可以看看报的什么错
-          console.log('error', err)
+          // console.log('error', err)
           reject(err)
         })
     }
@@ -156,4 +156,22 @@ export const installContacts = [
   { type: 2, text: '车主' },
   { type: 3, text: '备用联系人' },
   { type: -1, text: '其他' }
+]
+
+export const orderStates = [
+  { type: 0, text: '待支付' },
+  { type: 10, text: '待初审' },
+  { type: 11, text: '初审驳回' },
+  { type: 20, text: '待复审' },
+  { type: 21, text: '复审驳回' },
+  { type: 30, text: '待终审' },
+  { type: 31, text: '终审驳回' },
+  { type: 40, text: '已完成' },
+  { type: -200, text: '已作废' },
+  { type: -201, text: '作废审核' },
+  { type: -202, text: '作废驳回' },
+  { type: -300, text: '已退保' },
+  { type: -301, text: '退保中' },
+  { type: -302, text: '退保失败' },
+  { type: -400, text: '停止服务' }
 ]

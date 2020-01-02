@@ -13,7 +13,7 @@
         <a
           :href="model.policyFile"
           class="van-button van-button--warning van-button--small"
-          :download="name"
+          :download="pdfName"
           target="_blank"
           id="download_link"
         >
@@ -28,6 +28,14 @@
       <div class="d-content">
         <order-tags :model="model" />
         <van-row>
+          <van-col span="8"><label>订单状态:</label></van-col>
+          <van-col span="16">
+            <span>
+              {{ model.state | orderState() }}
+            </span>
+          </van-col>
+        </van-row>
+        <van-row>
           <van-col span="8"><label>保险函号:</label></van-col>
           <van-col span="16">
             <span>
@@ -35,7 +43,7 @@
             </span>
           </van-col>
         </van-row>
-        <van-collapse v-model="activeNames">
+        <van-collapse v-model="activeNames" @change="handleCollapseChange">
           <van-collapse-item
             v-if="model.ownerType === 1"
             title="车主信息"
@@ -261,7 +269,7 @@
               <van-col span="8"><label>开票金额:</label></van-col>
               <van-col span="16">
                 <span>
-                  {{ model.vehicleExtend.ivoiceAmount / 10000.0 }}
+                  {{ model.vehicleExtend.ivoiceAmount }}
                   <small>万元</small>
                 </span>
               </van-col>
@@ -295,7 +303,7 @@
                 <van-col span="8"><label>按揭金额:</label></van-col>
                 <van-col span="16">
                   <span>
-                    {{ model.vehicleExtend.mortgageAmount / 10000.0 }}
+                    {{ model.vehicleExtend.mortgageAmount }}
                     <small>万元</small>
                   </span>
                 </van-col>
@@ -340,7 +348,7 @@
               <van-col span="8"><label>保障金额:</label></van-col>
               <van-col span="16">
                 <span>
-                  {{ model.insuredAmount / 10000.0 }}
+                  {{ model.insuredAmount }}
                   <small class="d-unit">万元</small>
                 </span>
               </van-col>
@@ -525,6 +533,38 @@
               </van-col>
             </van-row>
           </van-collapse-item>
+          <van-collapse-item title="操作日志" name="6">
+            <template v-if="logs && logs.length">
+              <div v-for="log in logs" :key="log.id" class="d-log">
+                <div class="d-log-time">
+                  {{ log.createTime | time() }}
+                </div>
+                <div class="d-log-creator">
+                  {{ log.creatorName || log.creatorMobile }}
+                </div>
+                <div class="d-log-remark">
+                  {{ log.remark }}
+                </div>
+                <div
+                  v-for="detail in log.details"
+                  :key="detail.id"
+                  class="d-log-detail"
+                >
+                  <div class="d-log-field">
+                    {{ detail.fieldDesc || detail.fieldName }}
+                  </div>
+                  <div class="d-log-change">
+                    {{ detail.beforeValueDesc || detail.beforeValue || '无' }}
+                    <small>→</small>
+                    {{ detail.afterValueDesc || detail.afterValue || '无' }}
+                  </div>
+                </div>
+              </div>
+            </template>
+            <div v-else class="d-nothing">
+              暂无操作日志
+            </div>
+          </van-collapse-item>
         </van-collapse>
         <!-- <div class="d-actions">
           <van-button
@@ -553,6 +593,7 @@
 import OrderTags from '@/components/OrderTags'
 import Breadcrumb from '@/components/Breadcrumb'
 import { detail } from '@/services/order'
+import { logs } from '@/services/account'
 import { idTypes, paymodes, installContacts, downloadFile } from '@/utils'
 import Vue from 'vue'
 import {
@@ -585,12 +626,14 @@ export default {
       currentIndex: 0,
       currentTitle: '',
       id: '',
+      pdfName: '',
       activeNames: ['1'],
       model: {
         installExtend: {},
         vehicleExtend: {},
         extendPicture: []
       },
+      logs: undefined,
       pictures: [],
       titles: ['证件照', '购车发票/合同', '车辆合格证', '支付证明', '附件图片'],
       idTypes: idTypes,
@@ -600,22 +643,32 @@ export default {
   },
   mounted() {
     this.id = this.$route.params.id
-    detail(this.id).then(json => {
-      this.model = json
-      this.model.installExtend = json.installExtend || {}
-      if (json.ownerType === 2) {
-        this.titles[0] = '营业执照'
-      }
-      this.pictures.push(json.cardPicture)
-      this.pictures.push(json.vehicleExtend.invoice)
-      this.pictures.push(json.vehicleExtend.certificate)
-      this.pictures.push(json.payPictures)
-      for (var i in json.extendPicture) {
-        this.pictures.push(json.extendPicture[i])
-      }
-    })
+    this.loadDetail()
+    this.loadLogs()
   },
   methods: {
+    loadDetail() {
+      detail(this.id).then(json => {
+        this.model = json
+        this.pdfName = `icb_${json.policyNumber}.pdf`
+        this.model.installExtend = json.installExtend || {}
+        if (json.ownerType === 2) {
+          this.titles[0] = '营业执照'
+        }
+        this.pictures.push(json.cardPicture)
+        this.pictures.push(json.vehicleExtend.invoice)
+        this.pictures.push(json.vehicleExtend.certificate)
+        this.pictures.push(json.payPictures)
+        for (var i in json.extendPicture) {
+          this.pictures.push(json.extendPicture[i])
+        }
+      })
+    },
+    loadLogs() {
+      logs(this.id).then(json => {
+        this.logs = json.data
+      })
+    },
     handleBack() {
       this.$router.go(-1)
     },
@@ -632,6 +685,12 @@ export default {
     },
     handleDownload() {
       downloadFile(this.model.policyFile, `icb_${this.model.policyNumber}`)
+    },
+    handleCollapseChange() {
+      // console.log(name)
+      // if (name === '6' && !this.logs) {
+      //   this.loadLogs()
+      // }
     }
   }
 }
@@ -659,6 +718,7 @@ export default {
   margin: 46px 0;
   .d-content {
     padding: 20px;
+    background-color: #fff;
   }
   .van-row {
     color: #333;
@@ -677,5 +737,45 @@ export default {
     padding: 15px 0;
     text-align: right;
   }
+}
+.d-log {
+  line-height: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  .d-log-time,
+  .d-log-creator {
+    display: inline-block;
+    width: 50%;
+  }
+  .d-log-time {
+    color: #999;
+  }
+  .d-log-detail {
+    color: #666;
+    background-color: #f9f9f9;
+    margin-bottom: 0.2rem;
+    padding: 0 0.5rem;
+    overflow: hidden;
+    word-break: break-all;
+    small {
+      color: #ee0a24;
+    }
+  }
+  .d-log-field,
+  .d-log-change {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .d-log-field {
+    width: 33%;
+  }
+  .d-log-change {
+    width: 67%;
+  }
+}
+.d-nothing {
+  text-align: center;
+  line-height: 6rem;
+  color: #666;
 }
 </style>

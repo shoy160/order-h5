@@ -14,7 +14,7 @@
       <div slot="action" @click="handleSearch">搜索</div>
     </van-search>
     <menus active="orders" />
-    <van-pull-refresh v-model="loading" @refresh="handleRefresh">
+    <van-pull-refresh v-model="refresh" @refresh="handleRefresh">
       <van-list v-model="loading" :finished="finished" @load="handleLoad">
         <van-panel
           v-for="item in list"
@@ -57,11 +57,23 @@
                 item.createTime | formatDate('yyyy-MM-dd hh:mm')
               }}</span>
             </div>
+            <div class="d-item" v-if="item.reason">
+              <label>{{ item.stateFormat }}原因:</label>
+              <span>{{ item.reason }}</span>
+            </div>
           </div>
           <div slot="footer" class="d-footer">
-            <van-button size="small" @click="handleDetail(item.id)"
-              >详情</van-button
+            <van-button size="small" @click="handleDetail(item.id)">
+              详情
+            </van-button>
+            <van-button
+              v-if="[11, 21, 31].includes(item.state)"
+              size="small"
+              type="info"
+              @click="handleEdit(item.id)"
             >
+              编辑
+            </van-button>
             <van-button
               v-if="item.isElectronPolicy && item.state == 40"
               size="small"
@@ -80,6 +92,7 @@
     <pdf-view
       ref="pdfView"
       :src="pdfUrl"
+      :jpg="jpgUrl"
       :show="isShowPdf"
       :name="pdfName"
       @closed="handlePdfClose"
@@ -116,7 +129,8 @@ Vue.use(NavBar)
   .use(Row)
   .use(Col)
   .use(Popup)
-import { search, detail } from '@/services/order'
+import { search, detail, policyJpg } from '@/services/order'
+import { logs } from '@/services/account'
 export default {
   name: 'orderList',
   components: {
@@ -138,6 +152,7 @@ export default {
       keyword: '',
       active: 'orders',
       loading: false,
+      refresh: false,
       finished: false,
       stateList: {
         40: '已完成'
@@ -146,11 +161,20 @@ export default {
       total: 0,
       isShowPdf: false,
       pdfUrl: '',
+      jpgUrl: '',
       pdfName: ''
     }
   },
+  mounted() {
+    this.keyword = this.$store.getters.keyword
+  },
   methods: {
     getList(clear = false) {
+      this.$store.dispatch('updateKeyword', this.keyword)
+      this.input.state = -1
+      this.input.vin = ''
+      this.input.policyNumber = ''
+      this.input.owner = ''
       if (this.keyword) {
         if (/^\+\d{1,2}$/gi.test(this.keyword)) {
           //状态码
@@ -173,19 +197,34 @@ export default {
             this.input.owner = this.keyword
           }
         }
-      } else {
-        this.input.state = -1
-        this.input.vin = ''
-        this.input.policyNumber = ''
-        this.input.owner = ''
       }
       return search(this.input).then(json => {
         if (clear) this.list = []
+        for (var i in json.data) {
+          var item = json.data[i]
+          if ([11, 21, 31].includes(item.state)) {
+            this.loadReason(item.id)
+          }
+        }
         this.list = this.list.concat(json.data)
         this.total = json.total
-        this.loading = false
+        this.loading = this.refresh = false
         if (this.total <= this.input.page * this.input.size)
           this.finished = true
+      })
+    },
+    loadReason(id) {
+      logs(id, 1, 1).then(json => {
+        var reason = '无'
+        if (json.data && json.data.length) {
+          reason = json.data[0].remark
+        }
+        var index = this.list.findIndex(e => e.id === id)
+        if (index >= 0) {
+          var item = this.list[index]
+          item.reason = reason
+          this.$set(this.list, index, item)
+        }
       })
     },
     handleSearch() {
@@ -223,6 +262,9 @@ export default {
       // })
       // console.log(id)
     },
+    handleEdit(id) {
+      this.$router.push({ name: 'OrderEdit', params: { id } })
+    },
     handlePolicy(id, policy) {
       detail(id).then(json => {
         if (json.policyFile) {
@@ -230,6 +272,9 @@ export default {
           this.pdfName = `icb_${policy}.pdf`
           this.pdfUrl = json.policyFile
         }
+      })
+      policyJpg(id).then(json => {
+        this.jpgUrl = json
       })
     },
     handlePdfClose() {
@@ -244,7 +289,7 @@ export default {
   -webkit-user-select: auto;
 }
 .van-list {
-  margin-top: 54px;
+  margin: 54px 0;
 }
 .van-panel {
   margin-bottom: 0.5rem;

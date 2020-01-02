@@ -96,6 +96,7 @@ export default {
       login(this.account, this.pwd, this.vkey, this.vcode)
         .then(json => {
           setTicket(json.ticket)
+          this.$toast.clear()
           this.$router.replace('/order/list')
         })
         .catch(() => {

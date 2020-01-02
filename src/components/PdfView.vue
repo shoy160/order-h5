@@ -26,7 +26,16 @@
         target="_blank"
         id="download_link"
       >
-        下载保单
+        下载PDF
+      </a>
+      <a
+        :href="jpg"
+        class="van-button van-button--warning van-button--small"
+        :download="name"
+        target="_blank"
+        id="download_link"
+      >
+        下载JPG
       </a>
     </div>
   </div>
@@ -42,6 +51,7 @@ export default {
   name: 'PdfView',
   components: { pdf },
   props: {
+    jpg: String,
     src: String,
     name: String,
     show: Boolean
@@ -67,7 +77,7 @@ export default {
       this.loading = false
     },
     handleProgress(num) {
-      this.$emit('progress',num)
+      this.$emit('progress', num)
     },
     handleClosed() {
       this.showPopup = false

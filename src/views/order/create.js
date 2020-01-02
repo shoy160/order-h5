@@ -1,6 +1,12 @@
 import Menus from '@/components/Menus'
 import VersionSelector from '@/components/VersionSelector'
-import { templates, deviceTemplate, create } from '@/services/order'
+import {
+  templates,
+  deviceTemplate,
+  create,
+  detail,
+  edit
+} from '@/services/order'
 import {
   icbSaleList,
   saleList,
@@ -9,6 +15,10 @@ import {
 } from '@/services/account'
 import { ocr, upload } from '@/services/ocr'
 import { toDate } from '@/utils'
+// 表单验证
+import '@/utils/rules'
+import { ValidationObserver, ValidationProvider } from 'vee-validate'
+
 import { mapGetters } from 'vuex'
 import Vue from 'vue'
 import {
@@ -50,10 +60,14 @@ export const createOrder = {
   name: 'CreateOrder',
   components: {
     Menus,
-    VersionSelector
+    VersionSelector,
+    ValidationObserver,
+    ValidationProvider
   },
   data() {
     return {
+      title: '',
+      orderId: '',
       keyword: '',
       model: {
         ownerType: 1,
@@ -169,27 +183,95 @@ export const createOrder = {
     ...mapGetters(['shops', 'insurances', 'finances', 'carTypes', 'motoTypes'])
   },
   mounted() {
-    this.$store.dispatch('getShops', () => {
-      if (this.shops.length > 0) {
-        var shop = this.shops[0]
-        this.changeShop(shop)
-      }
-    })
-    //保险公司
-    this.$store.dispatch('getInsurances', () => {
-      if (this.insurances.length > 0) {
-        this.changeInsurance(this.insurances[0])
-      }
-    })
-    //金融公司
-    this.$store.dispatch('getFinances', () => {
-      // if (this.finances.length > 0) {
-      //   this.changeFinanceUnit(this.finances[0])
-      // }
-    })
-    this.model.serviceStart = new Date().addDays(1)
+    if (this.$route.params.id) {
+      this.title = '编辑订单'
+      this.orderId = this.$route.params.id
+      detail(this.orderId).then(json => {
+        this.parseOrderDetail(json)
+        this.loadModels()
+      })
+    } else {
+      this.title = '创建订单'
+      this.loadModels()
+      this.model.serviceStart = new Date().addDays(1)
+    }
   },
   methods: {
+    loadModels() {
+      this.$store.dispatch('getShops', () => {
+        if (this.shops.length > 0) {
+          var shop
+          if (this.model.shopId) {
+            shop = this.shops.find(e => e.id === this.model.shopId) || {
+              id: this.model.shopId,
+              text: this.model.shopName
+            }
+          } else {
+            shop = this.shops[0]
+          }
+          this.changeShop(shop)
+          //金融公司
+          this.$store.dispatch('getFinances', () => {
+            if (this.model.vehicleExtend.financeId) {
+              var item = this.finances.find(
+                e => e.id === this.model.vehicleExtend.financeId
+              ) || {
+                id: this.model.vehicleExtend.financeId,
+                text: this.model.vehicleExtend.financeName
+              }
+              this.changeFinanceUnit(item)
+            }
+          })
+        }
+      })
+      //保险公司
+      this.$store.dispatch('getInsurances', () => {
+        if (this.insurances.length > 0) {
+          if (this.model.electronPolicySupplierId) {
+            var item = this.insurances.find(
+              e => e.id === this.model.electronPolicySupplierId
+            ) || {
+              id: this.model.electronPolicySupplierId,
+              text: this.model.electronPolicySupplierName
+            }
+            this.changeInsurance(item)
+          } else {
+            this.changeInsurance(this.insurances[0])
+          }
+        }
+      })
+
+      if (this.model.payType) {
+        var item = this.paymodes.find(e => e.type === this.model.payType) || {
+          type: this.model.payType
+        }
+        this.changePaymode(item, 0, this.model.payRemark)
+      }
+    },
+    parseOrderDetail(json) {
+      this.model = Object.assign({}, json)
+      if (this.model.ownerType == 1) {
+        this.isCompany = false
+        this.previewIdCard = [{ url: this.model.cardPicture }]
+      } else {
+        this.isCompany = true
+        this.previewBusiLicense = [{ url: this.model.cardPicture }]
+      }
+      this.previewInvoice = [{ url: this.model.vehicleExtend.invoice }]
+      this.previewQc = [{ url: this.model.vehicleExtend.certificate }]
+      if (this.model.payPictures) {
+        this.previewPayment = [{ url: this.model.payPictures }]
+      }
+      if (this.model.extendPicture && this.model.extendPicture.length) {
+        for (var i in this.model.extendPicture) {
+          this.previewExtend.push({ url: this.model.extendPicture[i] })
+        }
+      }
+      this.deviceTemplate = this.model.tempPlateDevice
+      var vehicle = this.model.vehicleExtend
+      this.vehicleVersion = `${vehicle.factoryName} / ${vehicle.brandName} / ${vehicle.versionName}`
+      this.brandName = this.model.vehicleExtend.versionName
+    },
     showPopup(type, status = true) {
       this.popList[type] = status
       if (!this.currentPop || this.currentPop !== type) {
@@ -229,32 +311,75 @@ export const createOrder = {
       icbSaleList(value.id).then(json => {
         if (!json || json.length === 0) {
           value.disabled = true
+          this.icbSaleList = []
+          this.changeIcbSale()
           this.$toast('该经销商没有驻店员,请重新选择')
           return
         }
-        this.changeIcbSale(json[0])
+        if (this.model.acbSaleId) {
+          var item = json.find(e => e.id === this.model.acbSaleId) || {
+            id: this.model.acbSaleId,
+            text: this.model.acbSaleName,
+            mobile: this.model.acbSaleMobile
+          }
+          this.changeIcbSale(item)
+        } else {
+          this.changeIcbSale(json[0])
+        }
         this.icbSaleList = json
       })
       //本店销售
       saleList(value.id).then(json => {
         if (!json || json.length === 0) {
           value.disabled = true
+          this.saleList = this.sourceList.saleList = []
+          this.currentSale = { text: '' }
+          this.model.shopSaleId = ''
+          this.changeSale()
           this.$toast('该经销商没有销售员,请重新选择')
           return
         }
-        // this.changeSale(json[0])
+        if (this.model.shopSaleId) {
+          var item = json.find(e => e.id === this.model.shopSaleId) || {
+            id: this.model.shopSaleId,
+            text: this.model.shopSaleName,
+            mobile: this.model.shopSaleMobile
+          }
+          this.changeSale(item)
+        } else {
+          this.changeSale()
+        }
         this.saleList = this.sourceList.saleList = json
       })
       templates(value.id).then(json => {
         if (!json || json.length === 0) {
           value.disabled = true
+          this.templates = []
+          this.changeTemplate()
           this.$toast('该经销商没有可用的服务模板')
           return
+        }
+        if (this.model.templateId) {
+          var item = json.find(e => e.id === this.model.templateId) || {
+            id: this.model.templateId,
+            text: this.model.templateName,
+            month: this.model.year * 12
+          }
+          this.changeTemplate(item)
         }
         this.templates = json
       })
     },
     changeIcbSale(value) {
+      if (!value) {
+        this.currentIcbSale = ''
+        this.model.acbSaleId = ''
+        if (this.model.installExtend.contractType === 0) {
+          this.model.installExtend.contractName = ''
+          this.model.installExtend.contractMobile = ''
+        }
+        return
+      }
       this.currentIcbSale = value
       this.model.acbSaleId = value.id
       if (this.model.installExtend.contractType === 0) {
@@ -265,6 +390,11 @@ export const createOrder = {
       this.$set(this.popList, 'icbSales', false)
     },
     changeSale(value) {
+      if (!value) {
+        this.currentSale = { text: '' }
+        this.model.shopSaleId = ''
+        return
+      }
       this.currentSale = value
       this.model.shopSaleId = value.id
       // this.popList.sales = false
@@ -278,6 +408,12 @@ export const createOrder = {
       this.popList.insurances = false
     },
     changeTemplate(value) {
+      if (!value) {
+        this.currentTemplate = { text: '' }
+        this.model.templateId = ''
+        this.model.year = 1
+        return
+      }
       this.currentTemplate = value
       this.model.templateId = value.id
       this.model.year = value.month / 12
@@ -287,7 +423,7 @@ export const createOrder = {
     changeIDType(value) {
       this.cardType = value.text
       this.model.cardType = value.type
-      this.popList.changeShops = false
+      this.popList.idType = false
     },
     changeContactType(value) {
       //备用联系人
@@ -312,13 +448,13 @@ export const createOrder = {
       this.model.installExtend.templateDeviceId = ''
       this.deviceTemplate = ''
     },
-    changePaymode(value) {
+    changePaymode(value, index, remark = '') {
       this.paymode = value.text
       this.model.payType = value.type
       if (value.type === 6 || value.type === 3) {
         this.model.payRemark = value.text
       } else {
-        this.model.payRemark = ''
+        this.model.payRemark = remark
       }
       this.popList.paymode = false
     },
@@ -371,7 +507,7 @@ export const createOrder = {
       this.popList.finances = false
       //金融备注
       financeRemark(this.currentShop.id, value.id).then(remark => {
-        this.vehicleExtend.financeRemark = remark ? remark : value.remark
+        this.model.vehicleExtend.financeRemark = remark ? remark : value.remark
       })
     },
     changeVin(value) {
@@ -662,7 +798,14 @@ export const createOrder = {
         this.model.extendPicture.splice(detail.index, 1)
       })
     },
-    handleSave(draft = false) {
+    async handleSave(draft = false) {
+      if (!draft) {
+        //todo 表单验证
+        const isValid = await this.$refs.observer.validate()
+        if (!isValid) {
+          return false
+        }
+      }
       Dialog.confirm({
         message: draft ? '确认保存草稿？' : '确认提交订单？'
       }).then(() => {
@@ -672,29 +815,50 @@ export const createOrder = {
         postModel.installExtend = Object.assign({}, this.model.installExtend)
         postModel.vehicleExtend = Object.assign({}, this.model.vehicleExtend)
         postModel.extendPicture = Object.assign([], this.model.extendPicture)
-        //todo 表单验证
+
         var loading = this.$toast.loading({
           message: '订单提交中...'
         })
-        create(postModel)
-          .then(() => {
-            loading.clear()
-            Dialog.confirm({ message: '创建成功,是否继续录单？' })
-              .then(() => {
-                this.$router.go(0)
-              })
-              .catch(() => {
+        if (this.orderId) {
+          edit(postModel)
+            .then(() => {
+              loading.clear()
+              Dialog.alert({
+                title: '操作提示',
+                message: '编辑成功'
+              }).then(() => {
                 this.$router.push('/order/list')
               })
-          })
-          .catch(() => {
-            this.$toast({
-              type: 'fail',
-              message: '创建订单失败',
-              position: 'bottom',
-              duration: 2000
             })
-          })
+            .catch(() => {
+              this.$toast({
+                type: 'fail',
+                message: '编辑订单失败',
+                position: 'bottom',
+                duration: 2000
+              })
+            })
+        } else {
+          create(postModel)
+            .then(() => {
+              loading.clear()
+              Dialog.confirm({ message: '创建成功,是否继续录单？' })
+                .then(() => {
+                  this.$router.go(0)
+                })
+                .catch(() => {
+                  this.$router.push('/order/list')
+                })
+            })
+            .catch(() => {
+              this.$toast({
+                type: 'fail',
+                message: '创建订单失败',
+                position: 'bottom',
+                duration: 2000
+              })
+            })
+        }
       })
     },
     handleShowVersionSelector() {
@@ -774,6 +938,9 @@ export const createOrder = {
         }
       }
       this.$set(this.sourceList, type, result)
+    },
+    handleBack() {
+      this.$router.go(-1)
     }
   }
 }

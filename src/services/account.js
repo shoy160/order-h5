@@ -203,9 +203,16 @@ export const financeRemark = (shopId, financeId) => {
       }
     })
     .then(json => {
-      if (json.status && json.data) {
-        return json.data.financeRemark1
-      }
-      return json
+      return json.financeRemark1 || ''
     })
+}
+
+export const logs = (sourceId, page = 1, size = 20) => {
+  return ajax.get(`${authHost}/sys/logs`, {
+    params: {
+      sourceId: sourceId,
+      page: page,
+      size: size
+    }
+  })
 }

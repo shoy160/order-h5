@@ -11,14 +11,6 @@ export const search = (dto = {}) => {
 }
 
 /**
- * 订单详情
- * @param {string} id
- */
-export const detail = id => {
-  return ajax.get(`/order/${id}`)
-}
-
-/**
  * 服务模板
  * @param {*} shopId
  */
@@ -84,6 +76,62 @@ export const create = model => {
   //金额处理
   model.insuredAmount = model.insuredAmount * 10000
   model.vehicleExtend.ivoiceAmount = model.vehicleExtend.ivoiceAmount * 10000
-  console.log(model)
+  model.vehicleExtend.mortgageAmount =
+    model.vehicleExtend.mortgageAmount * 10000
+  // console.log(model)
   return ajax.post('/order', model)
+}
+
+/**
+ * 订单详情
+ * @param {string} id
+ */
+export const detail = id => {
+  return ajax.get(`/order/${id}`).then(json => {
+    // console.log(json)
+    //时间处理
+    json.serviceStart = new Date(json.serviceStart)
+    json.serviceEnd = new Date(json.serviceEnd)
+    json.vehicleExtend.buyTime = new Date(json.vehicleExtend.buyTime)
+    //金额处理
+    json.receivableAmount = json.receivableAmount.toString()
+    json.paidAmount = json.paidAmount.toString()
+    json.handlePaidAmount = json.handlePaidAmount.toString()
+    json.insuredAmount = (parseFloat(json.insuredAmount) / 10000.0).toString()
+    json.vehicleExtend.ivoiceAmount = (
+      parseFloat(json.vehicleExtend.ivoiceAmount) / 10000.0
+    ).toString()
+    if (json.vehicleExtend.mortgageAmount) {
+      json.vehicleExtend.mortgageAmount = (
+        parseFloat(json.vehicleExtend.mortgageAmount) / 10000.0
+      ).toString()
+    }
+    if (json.vehicleExtend.mortgageMonth) {
+      json.vehicleExtend.mortgageMonth = json.vehicleExtend.mortgageMonth.toString()
+    }
+
+    json.remark = json.remark || ''
+    json.orderSource = json.orderSource || 4
+    json.vehicleExtend.plateColor = json.vehicleExtend.plateColor || '蓝色'
+
+    return json
+  })
+}
+
+/**
+ * 编辑订单
+ * @param {*} model
+ */
+export const edit = model => {
+  //时间处理
+  model.serviceStart = +model.serviceStart
+  model.serviceEnd = +model.serviceEnd
+  model.vehicleExtend.buyTime = +model.vehicleExtend.buyTime
+  //金额处理
+  model.insuredAmount = model.insuredAmount * 10000
+  model.vehicleExtend.ivoiceAmount = model.vehicleExtend.ivoiceAmount * 10000
+  model.vehicleExtend.mortgageAmount =
+    model.vehicleExtend.mortgageAmount * 10000
+
+  return ajax.put('/order/edit', model)
 }
