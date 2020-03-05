@@ -74,14 +74,23 @@
             >
               编辑
             </van-button>
-            <van-button
+            <a
+              v-if="item.isElectronPolicy && item.state == 40"
+              :href="item.policyFile"
+              class="van-button van-button--warning van-button--small"
+              :download="'icb_' + item.policyNumber + '.pdf'"
+              target="_blank"
+            >
+              保单
+            </a>
+            <!-- <van-button
               v-if="item.isElectronPolicy && item.state == 40"
               size="small"
               type="warning"
               @click="handlePolicy(item.id, item.policyNumber)"
             >
               保单
-            </van-button>
+            </van-button> -->
           </div>
         </van-panel>
       </van-list>
