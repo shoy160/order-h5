@@ -11,6 +11,7 @@ import {
   icbSaleList,
   saleList,
   configList,
+  shopDetail,
   financeRemark
 } from '@/services/account'
 import { ocr, upload } from '@/services/ocr'
@@ -90,6 +91,8 @@ export const createOrder = {
         isElectronPolicy: true,
         isCreateInstall: true,
         isCreateOwner: true,
+        joinHuzhu: true,
+        jieyixian: false,
         serviceStart: new Date().addDays(1),
         extendPicture: []
       },
@@ -176,7 +179,9 @@ export const createOrder = {
       insuredAmountShow: false,
       receivableAmountShow: false,
       paidAmountShow: false,
-      handlePaidAmountShow: false
+      handlePaidAmountShow: false,
+      handleJieyixianAmountShow: false,
+      jieyiState: false
     }
   },
   computed: {
@@ -299,6 +304,7 @@ export const createOrder = {
       }
     },
     changeShop(value) {
+      //经销商变更
       this.currentShop = value
       this.model.shopName = value.text
       // this.model.shopId = value.id
@@ -307,6 +313,10 @@ export const createOrder = {
       }
       this.$set(this.model, 'shopId', value.id)
       this.popList.shops = false
+      shopDetail(value.id).then(json => {
+        this.currentShop.bitwise = json
+        this.jieyiRule()
+      })
       //驻店员
       icbSaleList(value.id).then(json => {
         if (!json || json.length === 0) {
@@ -401,9 +411,10 @@ export const createOrder = {
       this.$set(this.popList, 'saleList', false)
     },
     changeInsurance(value) {
-      //保险公司
+      //变更保险公司
       this.model.electronPolicySupplierName = value.text
       this.model.electronPolicySupplierId = value.id
+      this.jieyiRule()
       this.$set(this.model, 'electronPolicySupplierId', value.id)
       this.popList.insurances = false
     },
@@ -941,6 +952,21 @@ export const createOrder = {
     },
     handleBack() {
       this.$router.go(-1)
+    },
+    jieyiRule() {
+      //ZC可购买借意险
+      this.jieyiState =
+        this.model.electronPolicySupplierId ===
+        '8e300e4451cf4990be387734f5bc5275'
+      if (this.jieyiState) {
+        if ((this.currentShop.bitwise & 512) > 0) {
+          this.$set(this.model, 'jieyixian', true)
+          this.jieyiState = false
+        }
+      } else {
+        this.jieyiState = false
+        this.$set(this.model, 'jieyixian', false)
+      }
     }
   }
 }

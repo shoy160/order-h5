@@ -893,6 +893,17 @@
               @click="showPopup('paymode')"
             />
           </ValidationProvider>
+          <ValidationProvider name="支付凭证编号" rules="" v-slot="{ errors }">
+            <van-field
+              v-model="model.payNumber"
+              label="支付凭证编号"
+              required
+              placeholder="请输入支付凭证编号"
+              show-word-limit
+              :error="errors.length > 0"
+              :error-message="errors[0]"
+            />
+          </ValidationProvider>
           <ValidationProvider
             name="支付证明"
             :rules="model.payType !== 3 && model.payType !== 6 ? 'updated' : ''"
@@ -913,23 +924,6 @@
                 :before-delete="handleDeletePayment"
               />
             </van-field>
-          </ValidationProvider>
-          <ValidationProvider
-            name="支付备注"
-            rules="required"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.payRemark"
-              label="支付备注"
-              required
-              type="textarea"
-              placeholder="请输入支付备注"
-              maxlength="100"
-              show-word-limit
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
           </ValidationProvider>
         </van-cell-group>
         <van-cell-group title="安装信息">
@@ -1022,6 +1016,46 @@
         <van-cell-group title="其他信息">
           <van-switch-cell title="凡车汇订单" v-model="model.isFch" />
           <van-switch-cell title="短信通知车主" v-model="model.isCreateOwner" />
+          <van-switch-cell
+            title="购买互助险"
+            disabled
+            v-model="model.joinHuzhu"
+          />
+          <van-switch-cell
+            title="购买借意险"
+            :disabled="!jieyiState"
+            v-model="model.jieyixian"
+          />
+          <ValidationProvider
+            name="借意险实收费用"
+            rules="amount"
+            v-slot="{ errors }"
+          >
+            <van-field
+              v-if="model.jieyixian == 1"
+              v-model="model.jieyixianAmount"
+              label="借意险费用"
+              required
+              readonly
+              input-align="right"
+              placeholder="请输入借意险费用"
+              :error="errors.length > 0"
+              :error-message="errors[0]"
+              @click="handleJieyixianAmountShow = true"
+              :class="{ 'd-warning': model.jieyixianAmount > 20000 }"
+            >
+              <div slot="right-icon" class="d-input-unit">元</div>
+            </van-field>
+          </ValidationProvider>
+          <van-number-keyboard
+            v-model="model.jieyixianAmount"
+            theme="custom"
+            extra-key="."
+            close-button-text="完成"
+            :show="handleJieyixianAmountShow"
+            :maxlength="9"
+            @blur="handleJieyixianAmountShow = false"
+          />
           <van-field
             v-model="model.remark"
             label="订单备注"

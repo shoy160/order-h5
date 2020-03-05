@@ -415,6 +415,14 @@
               </van-col>
             </van-row>
             <van-row>
+              <van-col span="8"><label>支付凭证编号:</label></van-col>
+              <van-col span="16">
+                <span>
+                  {{ model.payNumber }}
+                </span>
+              </van-col>
+            </van-row>
+            <van-row>
               <van-col span="8"><label>支付证明:</label></van-col>
               <van-col span="16">
                 <van-image
@@ -509,6 +517,31 @@
               <van-col span="16">
                 <span>
                   {{ model.shopSaleName }}
+                </span>
+              </van-col>
+            </van-row>
+            <van-row>
+              <van-col span="8"><label>购买互助险:</label></van-col>
+              <van-col span="16">
+                <span>
+                  {{ model.joinHuzhu ? '是' : '否' }}
+                </span>
+              </van-col>
+            </van-row>
+            <van-row>
+              <van-col span="8"><label>购买借意险:</label></van-col>
+              <van-col span="16">
+                <span>
+                  {{ model.jieyixian ? '是' : '否' }}
+                </span>
+              </van-col>
+            </van-row>
+            <van-row v-if="model.jieyixian">
+              <van-col span="8"><label>借意险费用:</label></van-col>
+              <van-col span="16">
+                <span>
+                  {{ model.jieyixianAmount }}
+                  <small class="d-unit">元</small>
                 </span>
               </van-col>
             </van-row>

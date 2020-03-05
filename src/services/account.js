@@ -53,12 +53,21 @@ export const shopList = (page = 1) => {
         var shops = []
         for (var i in json.data) {
           var item = json.data[i]
-          shops.push({ id: item.id, text: item.name, address: item.addrDesc })
+          shops.push({
+            id: item.id,
+            text: item.name,
+            address: item.addrDesc,
+            bitwise: item.bitwise
+          })
         }
         return shops
       }
       return json
     })
+}
+
+export const shopDetail = id => {
+  return ajax.get(`${authHost}/shop/bitwise/${id}`)
 }
 
 /**
