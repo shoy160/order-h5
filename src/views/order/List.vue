@@ -155,7 +155,7 @@ export default {
         state: -1,
         begin: '',
         end: '',
-        page: 1,
+        page: 0,
         size: 15
       },
       keyword: '',
@@ -178,7 +178,7 @@ export default {
     this.keyword = this.$store.getters.keyword
   },
   methods: {
-    getList(clear = false) {
+    getList() {
       this.$store.dispatch('updateKeyword', this.keyword)
       this.input.state = -1
       this.input.vin = ''
@@ -208,7 +208,7 @@ export default {
         }
       }
       return search(this.input).then(json => {
-        if (clear) this.list = []
+        if (this.input.page === 1) this.list = []
         for (var i in json.data) {
           var item = json.data[i]
           if ([11, 21, 31].includes(item.state)) {
@@ -243,13 +243,13 @@ export default {
       })
       this.input.page = 1
       window.scrollTo({ top: 0 })
-      this.getList(true).then(() => {
+      this.getList().then(() => {
         this.$toast.clear()
       })
     },
     handleRefresh() {
       this.input.page = 1
-      this.getList(true)
+      this.getList()
     },
     handleLoad() {
       if (this.input.page > 1) {
@@ -258,8 +258,8 @@ export default {
           forbidClick: true
         })
       }
+      this.input.page += 1
       this.getList().then(() => {
-        this.input.page += 1
         this.$toast.clear()
       })
     },
@@ -297,15 +297,17 @@ export default {
 * {
   -webkit-user-select: auto;
 }
-.van-list {
-  margin: 54px 0;
+.van-pull-refresh {
+  margin-top: 45px;
 }
 .van-panel {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
-
-.van-panel__footer {
+.van-list {
   background-color: #f9f9f9;
+}
+.van-panel__footer {
+  background-color: #fefefe;
 }
 .d-search {
   position: fixed;

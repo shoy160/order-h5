@@ -24,14 +24,19 @@ const routes = [
     component: () => import('../views/order/List.vue')
   },
   {
+    path: '/order/draft',
+    name: 'OrderDraft',
+    component: () => import('../views/order/Draft.vue')
+  },
+  {
     path: '/order/create',
     name: 'OrderCreate',
-    component: () => import('../views/order/Create.vue')
+    component: () => import('../views/order/create/Index.vue')
   },
   {
     path: '/order/edit/:id',
     name: 'OrderEdit',
-    component: () => import('../views/order/Create.vue')
+    component: () => import('../views/order/create/Index.vue')
   },
   {
     path: '/order/:id',

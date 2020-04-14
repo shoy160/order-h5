@@ -1,6 +1,6 @@
 <template>
   <div class="d-tags">
-    <van-tag type="primary" plain>{{
+    <van-tag type="primary" plain v-if="model.orderType !== undefined">{{
       model.orderType == 0 ? 'i车保' : '凡车汇'
     }}</van-tag>
     <van-tag color="#ff5400" plain>{{

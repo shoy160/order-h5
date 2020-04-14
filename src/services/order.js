@@ -147,3 +147,18 @@ export const edit = model => {
 
   return ajax.put('/order/edit', model)
 }
+
+/**
+ * 草稿列表
+ * @param {*} page
+ * @param {*} size
+ */
+export const draftList = (page = 1, size = 10) => {
+  return ajax.get('/draft/list', {
+    params: {
+      page: page,
+      size: size,
+      draftType: 1
+    }
+  })
+}

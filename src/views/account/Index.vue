@@ -6,11 +6,11 @@
     </div>
     <van-cell-group>
       <van-cell v-if="isBoss" title="实时数据" is-link to="dashdoard" />
-      <van-cell title="草稿箱" is-link />
+      <van-cell title="草稿箱" is-link to="/order/draft" />
       <van-cell title="设置" is-link />
     </van-cell-group>
     <div style="text-align:center">
-      <van-button type="danger" class="logout" @click="handleLogout"
+      <van-button type="info" class="logout" @click="handleLogout"
         >安全退出</van-button
       >
     </div>
