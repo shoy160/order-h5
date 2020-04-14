@@ -39,6 +39,11 @@ const routes = [
     component: () => import('../views/order/Detail.vue')
   },
   {
+    path: '/dashdoard',
+    name: 'Dashdoard',
+    component: () => import('../views/dashdoard/Index.vue')
+  },
+  {
     path: '*',
     name: 'NotFound',
     component: () => import('../views/errors/404.vue')

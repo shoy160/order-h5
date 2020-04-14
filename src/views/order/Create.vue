@@ -13,7 +13,7 @@
         type="primary"
         @click="handleSave(false)"
       >
-        保存
+        提交
       </van-button>
     </van-nav-bar>
     <menus active="new" />
@@ -75,250 +75,247 @@
           v-model="isCompany"
           @change="changeOrderType"
         />
-        <van-cell-group v-if="isCompany" title="企业信息">
-          <van-field
-            label="证件类型"
-            input-align="right"
-            value="统一社会信用代码"
-          >
-            <!-- <van-radio-group slot="input" v-model="model.cardType">
-            <van-row type="flex" justify="end">
-              <van-col>
-                <van-radio :name="5">统一社会信用代码</van-radio>
-              </van-col>
-            </van-row>
-          </van-radio-group> -->
-          </van-field>
-          <ValidationProvider
-            name="营业执照"
-            :rules="isCompany ? 'updated' : ''"
-            v-slot="{ errors }"
-          >
+        <div v-show="isCompany">
+          <van-cell-group title="企业信息">
             <van-field
-              label="营业执照"
-              required
+              label="证件类型"
               input-align="right"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
+              value="统一社会信用代码"
             >
-              <van-uploader
-                slot="input"
-                :max-count="1"
-                v-model="previewBusiLicense"
-                :after-read="handleUploadBusiLicense"
-                :before-delete="handleDeleteBusiLicense"
-              />
             </van-field>
-          </ValidationProvider>
-          <ValidationProvider
-            name="证件号码"
-            :rules="isCompany ? 'required' : ''"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.cardNumber"
-              label="证件号码"
-              required
-              input-align="right"
-              placeholder="请输入证件号码"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-          <ValidationProvider
-            name="企业名称"
-            :rules="isCompany ? 'required' : ''"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.ownerName"
-              label="企业名称"
-              required
-              input-align="right"
-              placeholder="请输入企业名称"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-          <ValidationProvider
-            name="联系电话"
-            :rules="isCompany ? 'required' : ''"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.ownerMobile"
-              label="联系电话"
-              required
-              input-align="right"
-              placeholder="请输入联系电话"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-          <ValidationProvider
-            name="驾驶人"
-            :rules="isCompany ? 'required' : ''"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.driverName"
-              label="驾驶人"
-              required
-              input-align="right"
-              placeholder="请输入驾驶人"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-          <ValidationProvider
-            name="驾驶人电话"
-            :rules="isCompany ? 'required|mobile' : ''"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.driverMobile"
-              label="驾驶人电话"
-              required
-              type="number"
-              input-align="right"
-              placeholder="请输入驾驶人电话"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-        </van-cell-group>
-        <van-cell-group v-else class="d-person" title="车主信息">
-          <van-field
-            v-model="cardType"
-            label="证件类型"
-            input-align="right"
-            readonly
-            placeholder="请选择证件类型"
-            is-link
-            arrow-direction="down"
-            @click="showPopup('idType')"
-          />
-          <ValidationProvider
-            name="证件照"
-            :rules="isCompany ? '' : 'updated'"
-            v-slot="{ errors }"
-          >
-            <van-field label="证件照" required input-align="right">
-              <van-uploader
-                slot="input"
-                :max-count="1"
-                v-model="previewIdCard"
-                :after-read="handleUploadIdCard"
-                :before-delete="handleDeleteIdCard"
-              />
-            </van-field>
-          </ValidationProvider>
-          <ValidationProvider
-            name="证件号码"
-            :rules="isCompany ? '' : 'required|idno'"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.cardNumber"
-              label="证件号码"
-              required
-              input-align="right"
-              placeholder="请输入证件号码"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-          <ValidationProvider
-            name="车主姓名"
-            :rules="isCompany ? '' : 'required'"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.ownerName"
-              label="车主姓名"
-              required
-              input-align="right"
-              placeholder="请输入车主姓名"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-            />
-          </ValidationProvider>
-          <ValidationProvider
-            name="车主电话"
-            :rules="isCompany ? '' : 'required'"
-            v-slot="{ errors }"
-          >
-            <van-field
-              v-model="model.ownerMobile"
-              label="车主电话"
-              required
-              type="number"
-              input-align="right"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
-              placeholder="请输入车主电话"
-            />
-          </ValidationProvider>
-          <ValidationProvider
-            name="车主性别"
-            :rules="isCompany ? '' : 'selected'"
-            v-slot="{ errors }"
-          >
-            <van-field
-              label="车主性别"
-              required
-              input-align="right"
-              :error="errors.length > 0"
+            <ValidationProvider
+              name="营业执照"
+              :rules="isCompany ? 'updated' : ''"
+              v-slot="{ errors }"
             >
-              <van-radio-group slot="input" v-model="model.sex">
-                <van-row type="flex" justify="end">
-                  <van-radio :name="1">男士</van-radio>
-                  <van-radio :name="2">女士</van-radio>
-                </van-row>
-              </van-radio-group>
-            </van-field>
-          </ValidationProvider>
-          <ValidationProvider
-            name="联系人类型"
-            :rules="isCompany ? '' : 'selected'"
-            v-slot="{ errors }"
-          >
+              <van-field
+                label="营业执照"
+                required
+                input-align="right"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              >
+                <van-uploader
+                  slot="input"
+                  :max-count="1"
+                  v-model="previewBusiLicense"
+                  :after-read="handleUploadBusiLicense"
+                  :before-delete="handleDeleteBusiLicense"
+                />
+              </van-field>
+            </ValidationProvider>
+            <ValidationProvider
+              name="证件号码"
+              :rules="isCompany ? 'required' : ''"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.cardNumber"
+                label="证件号码"
+                required
+                input-align="right"
+                placeholder="请输入证件号码"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+            <ValidationProvider
+              name="企业名称"
+              :rules="isCompany ? 'required' : ''"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.ownerName"
+                label="企业名称"
+                required
+                input-align="right"
+                placeholder="请输入企业名称"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+            <ValidationProvider
+              name="联系电话"
+              :rules="isCompany ? 'required' : ''"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.ownerMobile"
+                label="联系电话"
+                required
+                input-align="right"
+                placeholder="请输入联系电话"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+            <ValidationProvider
+              name="驾驶人"
+              :rules="isCompany ? 'required' : ''"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.driverName"
+                label="驾驶人"
+                required
+                input-align="right"
+                placeholder="请输入驾驶人"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+            <ValidationProvider
+              name="驾驶人电话"
+              :rules="isCompany ? 'required|mobile' : ''"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.driverMobile"
+                label="驾驶人电话"
+                required
+                type="number"
+                input-align="right"
+                placeholder="请输入驾驶人电话"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+          </van-cell-group>
+        </div>
+        <div v-show="!isCompany">
+          <van-cell-group class="d-person" title="车主信息">
             <van-field
-              v-model="model.spareRelation"
-              label="联系人类型"
+              v-model="cardType"
+              label="证件类型"
               input-align="right"
               readonly
-              required
+              placeholder="请选择证件类型"
               is-link
               arrow-direction="down"
-              placeholder="请选择备用联系人类型"
-              :error="errors.length > 0"
-              @click="showPopup('contactType')"
+              @click="showPopup('idType')"
             />
-          </ValidationProvider>
-          <van-field
-            v-model="model.spareName"
-            label="备用联系人"
-            input-align="right"
-            placeholder="请输入备用联系人"
-          />
-          <ValidationProvider
-            name="联系人类型"
-            :rules="isCompany ? '' : 'required'"
-            v-slot="{ errors }"
-          >
+            <ValidationProvider
+              name="证件照"
+              :rules="isCompany ? '' : 'updated'"
+              v-slot="{ errors }"
+            >
+              <van-field label="证件照" required input-align="right">
+                <van-uploader
+                  slot="input"
+                  :max-count="1"
+                  v-model="previewIdCard"
+                  :after-read="handleUploadIdCard"
+                  :before-delete="handleDeleteIdCard"
+                />
+              </van-field>
+            </ValidationProvider>
+            <ValidationProvider
+              name="证件号码"
+              :rules="isCompany ? '' : 'required|idno'"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.cardNumber"
+                label="证件号码"
+                required
+                input-align="right"
+                placeholder="请输入证件号码"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+            <ValidationProvider
+              name="车主姓名"
+              :rules="isCompany ? '' : 'required'"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.ownerName"
+                label="车主姓名"
+                required
+                input-align="right"
+                placeholder="请输入车主姓名"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+            <ValidationProvider
+              name="车主电话"
+              :rules="isCompany ? '' : 'required'"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.ownerMobile"
+                label="车主电话"
+                required
+                type="number"
+                input-align="right"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+                placeholder="请输入车主电话"
+              />
+            </ValidationProvider>
+            <ValidationProvider
+              name="车主性别"
+              :rules="isCompany ? '' : 'selected'"
+              v-slot="{ errors }"
+            >
+              <van-field
+                label="车主性别"
+                required
+                input-align="right"
+                :error="errors.length > 0"
+              >
+                <van-radio-group slot="input" v-model="model.sex">
+                  <van-row type="flex" justify="end">
+                    <van-radio :name="1">男士</van-radio>
+                    <van-radio :name="2">女士</van-radio>
+                  </van-row>
+                </van-radio-group>
+              </van-field>
+            </ValidationProvider>
+            <ValidationProvider
+              name="联系人类型"
+              :rules="isCompany ? '' : 'selected'"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.spareRelation"
+                label="联系人类型"
+                input-align="right"
+                readonly
+                required
+                is-link
+                arrow-direction="down"
+                placeholder="请选择备用联系人类型"
+                :error="errors.length > 0"
+                @click="showPopup('contactType')"
+              />
+            </ValidationProvider>
             <van-field
-              v-model="model.spareMobile"
-              label="联系人电话"
-              required
-              type="number"
+              v-model="model.spareName"
+              label="备用联系人"
               input-align="right"
-              placeholder="请输入备用联系人电话"
-              :error="errors.length > 0"
-              :error-message="errors[0]"
+              placeholder="请输入备用联系人"
             />
-          </ValidationProvider>
-        </van-cell-group>
+            <ValidationProvider
+              name="联系人类型"
+              :rules="isCompany ? '' : 'required'"
+              v-slot="{ errors }"
+            >
+              <van-field
+                v-model="model.spareMobile"
+                label="联系人电话"
+                required
+                type="number"
+                input-align="right"
+                placeholder="请输入备用联系人电话"
+                :error="errors.length > 0"
+                :error-message="errors[0]"
+              />
+            </ValidationProvider>
+          </van-cell-group>
+        </div>
         <van-cell-group class="d-vehicle" title="车辆信息">
           <ValidationProvider
             name="购车发票/合同"
@@ -898,6 +895,7 @@
               v-model="model.payNumber"
               label="支付凭证编号"
               required
+              input-align="right"
               placeholder="请输入支付凭证编号"
               show-word-limit
               :error="errors.length > 0"
@@ -960,7 +958,11 @@
               :value="deviceTemplate"
               label="安装设备"
               readonly
-              input-align="right"
+              input-align="right"              
+              is-link
+              arrow-direction="down"
+              placeholder="请选择设备模板"
+              @click="showPopup('deviceTemplates')"
             />
             <ValidationProvider
               name="联系人类型"
@@ -1303,6 +1305,16 @@
         :columns="ocrs.factories"
         @cancel="showPopup('factories', false)"
         @confirm="changeFactory"
+      />
+    </van-popup>
+    <van-popup v-model="popList.deviceTemplates" position="bottom">
+      <van-picker
+        show-toolbar
+        title="设备模板"
+        :value="model.vehicleExtend.templateDeviceId"
+        :columns="deviceTemplates"
+        @cancel="showPopup('deviceTemplates', false)"
+        @confirm="changeDeviceTemplate"
       />
     </van-popup>
   </div>

@@ -5,6 +5,8 @@
       <h3>{{ userNick }}</h3>
     </div>
     <van-cell-group>
+      <van-cell v-if="isBoss" title="实时数据" is-link to="dashdoard" />
+      <van-cell title="草稿箱" is-link />
       <van-cell title="设置" is-link />
     </van-cell-group>
     <div style="text-align:center">
@@ -31,7 +33,10 @@ export default {
     Menus
   },
   computed: {
-    ...mapGetters(['userAvatar', 'userNick'])
+    ...mapGetters(['userNick', 'userAvatar', 'userAccount']),
+    isBoss() {
+      return this.userAccount === 'testadmin' || this.userAccount === 'v3admin'
+    }
   },
   methods: {
     handleLogout() {

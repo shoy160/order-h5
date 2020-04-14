@@ -44,12 +44,24 @@ export const templates = shopId => {
  * @param {*} versionId
  */
 export const deviceTemplate = (shopId, versionId) => {
-  return ajax.get('/template/device/version_shop', {
-    params: {
-      shopId: shopId,
-      versionId: versionId
-    }
-  })
+  return ajax
+    .get('/template/device/version_shop/list', {
+      params: {
+        shopId: shopId,
+        versionId: versionId
+      }
+    })
+    .then(json => {
+      if (json.status && json.data) {
+        var list = []
+        for (var i in json.data) {
+          var item = json.data[i]
+          list.push({ id: item.id, text: item.deviceName })
+        }
+        return list
+      }
+      return json
+    })
 }
 
 /**

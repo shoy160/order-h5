@@ -113,7 +113,8 @@ export const createOrder = {
         finances: false,
         vins: false,
         engines: false,
-        factories: false
+        factories: false,
+        deviceTemplates: false
       },
       currentPop: '',
       ocrs: {
@@ -167,6 +168,7 @@ export const createOrder = {
       saleList: [],
       templates: [],
       configList: [],
+      deviceTemplates: [],
       previewIdCard: [],
       previewBusiLicense: [],
       previewInvoice: [],
@@ -296,11 +298,11 @@ export const createOrder = {
     changeOrderType(checked) {
       if (checked) {
         this.model.ownerType = 2
-        this.model.cardType = 5
+        this.$set(this.model, 'cardType', 5)
       } else {
         this.model.ownerType = 1
-        this.model.cardType = 1
         this.cardType = '身份证'
+        this.$set(this.model, 'cardType', 1)
       }
     },
     changeShop(value) {
@@ -905,8 +907,12 @@ export const createOrder = {
       })
       //加载设备模板
       deviceTemplate(this.currentShop.id, version.id).then(json => {
-        this.model.installExtend.templateDeviceId = json.id
-        this.deviceTemplate = json.deviceName
+        this.deviceTemplates = json
+        if (json && json.length) {
+          var tmp = json[0]
+          this.model.installExtend.templateDeviceId = tmp.id
+          this.deviceTemplate = tmp.text
+        }
       })
       this.$nextTick(() => {
         window.scrollTo({ top: this.scrollTop })
@@ -918,6 +924,11 @@ export const createOrder = {
       this.model.vehicleExtend.configId = value.id
       this.model.vehicleExtend.configName = value.text
       this.popList.configList = false
+    },
+    changeDeviceTemplate(value) {
+      this.model.installExtend.templateDeviceId = value.id
+      this.deviceTemplate = value.text
+      this.popList.deviceTemplates = false
     },
     fillOcr(vin, engine, factory) {
       if (vin && this.ocrs.vins.indexOf(vin) < 0) {
@@ -967,6 +978,11 @@ export const createOrder = {
         this.jieyiState = false
         this.$set(this.model, 'jieyixian', false)
       }
+    }
+  },
+  watch: {
+    'model.ownerName': function(val) {
+      this.model.beneficiary = val
     }
   }
 }

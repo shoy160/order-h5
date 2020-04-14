@@ -101,6 +101,8 @@ export default {
         })
         .catch(() => {
           // loading.clear()
+          this.vcode = ''
+          this.refreshVcode()
         })
     }
   }
