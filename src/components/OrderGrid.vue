@@ -89,6 +89,6 @@ export default {
   color: #555;
 }
 .d-number span {
-  text-shadow: 1px 0px 2px #999;
+  text-shadow: 1px 0px 1px #ccc;
 }
 </style>

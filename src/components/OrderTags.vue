@@ -14,6 +14,12 @@
     <van-tag color="#7232dd" plain v-if="model.isBuyTradition">传统</van-tag>
     <van-tag type="warning" plain v-if="model.isMortgage">按揭</van-tag>
     <van-tag type="danger" plain v-if="model.isUsedCar">二手</van-tag>
+    <van-tag color="#85b" plain v-if="(model.orderSource & 32) > 0">
+      买赠
+    </van-tag>
+    <van-tag color="#b58" plain v-if="(model.orderSource & 64) > 0">
+      纯赠
+    </van-tag>
   </div>
 </template>
 <script>
@@ -23,8 +29,8 @@ Vue.use(Tag)
 export default {
   name: 'OrderTags',
   props: {
-    model: Object
-  }
+    model: Object,
+  },
 }
 </script>
 <style>

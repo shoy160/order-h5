@@ -20,12 +20,12 @@
           <div class="d-content">
             <order-tags :model="item" />
             <div class="d-item">
-              <label>车架号:</label>
-              <span>{{ item.vin }}</span>
-            </div>
-            <div class="d-item">
               <label>{{ item.ownerType == 1 ? '车主' : '企业' }}:</label>
               <span>{{ item.ownerName }}</span>
+            </div>
+            <div class="d-item">
+              <label>手机号码:</label>
+              <span>{{ item.ownerMobile }}</span>
             </div>
             <div class="d-item">
               <label>驻店员:</label>
@@ -34,7 +34,8 @@
             <div class="d-item">
               <label>销售员:</label>
               <span>
-                {{ item.shopSaleName }} <small>{{ item.shopName }}</small>
+                {{ item.shopSaleName || '无' }}
+                <small>{{ item.shopName }}</small>
               </span>
             </div>
           </div>
@@ -69,12 +70,12 @@ export default {
       total: 0,
       page: 0,
       size: 15,
-      list: []
+      list: [],
     }
   },
   methods: {
     getList() {
-      return draftList(this.page, this.size).then(json => {
+      return draftList(this.page, this.size).then((json) => {
         if (this.page === 1) this.list = []
         this.total = json.total
         this.list = this.list.concat(json.data)
@@ -90,7 +91,7 @@ export default {
       if (this.page > 1) {
         this.$toast.loading({
           message: '加载中...',
-          forbidClick: true
+          forbidClick: true,
         })
       }
       this.page++
@@ -100,8 +101,11 @@ export default {
     },
     handleBack() {
       this.$router.go(-1)
-    }
-  }
+    },
+    handleEdit(id) {
+      this.$router.push({ name: 'OrderDraftEdit', params: { draftId: id } })
+    },
+  },
 }
 </script>
 <style>

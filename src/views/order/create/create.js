@@ -5,14 +5,16 @@ import {
   deviceTemplate,
   create,
   detail,
-  edit
+  edit,
+  draftDetail,
+  draftSave,
 } from '@/services/order'
 import {
   icbSaleList,
   saleList,
   configList,
   shopDetail,
-  financeRemark
+  financeRemark,
 } from '@/services/account'
 import { ocr, upload } from '@/services/ocr'
 import { toDate } from '@/utils'
@@ -38,7 +40,7 @@ import {
   Button,
   Popup,
   Icon,
-  Dialog
+  Dialog,
 } from 'vant'
 Vue.use(NavBar)
   .use(CellGroup)
@@ -63,7 +65,7 @@ export const createOrder = {
     Menus,
     VersionSelector,
     ValidationObserver,
-    ValidationProvider
+    ValidationProvider,
   },
   data() {
     return {
@@ -77,14 +79,14 @@ export const createOrder = {
         vehicleExtend: {
           financeRemark: '',
           plateColor: '蓝色',
-          buyTime: new Date()
+          buyTime: new Date(),
         },
         installExtend: {
           addressType: 1,
           address: '',
           contractType: 0,
           contractName: '',
-          contractMobile: ''
+          contractMobile: '',
         },
         remark: '',
         orderSource: 4,
@@ -94,7 +96,8 @@ export const createOrder = {
         joinHuzhu: true,
         jieyixian: false,
         serviceStart: new Date().addDays(1),
-        extendPicture: []
+        extendPicture: [],
+        draftId: '',
       },
       popList: {
         shops: false,
@@ -114,13 +117,13 @@ export const createOrder = {
         vins: false,
         engines: false,
         factories: false,
-        deviceTemplates: false
+        deviceTemplates: false,
       },
       currentPop: '',
       ocrs: {
         vins: [], //车架号
         engines: [], //发动机号
-        factories: [] //厂牌型号
+        factories: [], //厂牌型号
       },
       scrollTop: 0,
       showForm: true,
@@ -140,7 +143,7 @@ export const createOrder = {
         { type: 2, text: '驾驶证' },
         { type: 3, text: '军官证' },
         { type: 4, text: '护照' },
-        { type: 6, text: '港澳通行证' }
+        { type: 6, text: '港澳通行证' },
       ],
       contactTypes: ['家人', '同事', '朋友', '其他'],
       paymodes: [
@@ -149,20 +152,20 @@ export const createOrder = {
         { type: 3, text: '对公转账' },
         { type: 4, text: '成都银行扫码' },
         { type: 5, text: 'POS机' },
-        { type: 6, text: '月结' }
+        { type: 6, text: '月结' },
       ],
       installContacts: [
         { type: 0, text: '驻店员' },
         { type: 1, text: '销售顾问' },
         { type: 2, text: '车主' },
         { type: 3, text: '备用联系人' },
-        { type: -1, text: '其他' }
+        { type: -1, text: '其他' },
       ],
       sourceList: {
         saleList: [],
         finances: [],
         configList: [],
-        shops: []
+        shops: [],
       },
       icbSaleList: [],
       saleList: [],
@@ -183,18 +186,26 @@ export const createOrder = {
       paidAmountShow: false,
       handlePaidAmountShow: false,
       handleJieyixianAmountShow: false,
-      jieyiState: false
+      jieyiState: false,
     }
   },
   computed: {
-    ...mapGetters(['shops', 'insurances', 'finances', 'carTypes', 'motoTypes'])
+    ...mapGetters(['shops', 'insurances', 'finances', 'carTypes', 'motoTypes']),
   },
   mounted() {
     if (this.$route.params.id) {
       this.title = '编辑订单'
       this.orderId = this.$route.params.id
-      detail(this.orderId).then(json => {
+      detail(this.orderId).then((json) => {
         this.parseOrderDetail(json)
+        this.loadModels()
+      })
+    } else if (this.$route.params.draftId) {
+      this.title = '编辑草稿'
+      let draftId = this.$route.params.draftId
+      draftDetail(draftId).then((json) => {
+        this.parseOrderDetail(json)
+        this.model.draftId = draftId
         this.loadModels()
       })
     } else {
@@ -209,9 +220,9 @@ export const createOrder = {
         if (this.shops.length > 0) {
           var shop
           if (this.model.shopId) {
-            shop = this.shops.find(e => e.id === this.model.shopId) || {
+            shop = this.shops.find((e) => e.id === this.model.shopId) || {
               id: this.model.shopId,
-              text: this.model.shopName
+              text: this.model.shopName,
             }
           } else {
             shop = this.shops[0]
@@ -221,10 +232,10 @@ export const createOrder = {
           this.$store.dispatch('getFinances', () => {
             if (this.model.vehicleExtend.financeId) {
               var item = this.finances.find(
-                e => e.id === this.model.vehicleExtend.financeId
+                (e) => e.id === this.model.vehicleExtend.financeId
               ) || {
                 id: this.model.vehicleExtend.financeId,
-                text: this.model.vehicleExtend.financeName
+                text: this.model.vehicleExtend.financeName,
               }
               this.changeFinanceUnit(item)
             }
@@ -236,10 +247,10 @@ export const createOrder = {
         if (this.insurances.length > 0) {
           if (this.model.electronPolicySupplierId) {
             var item = this.insurances.find(
-              e => e.id === this.model.electronPolicySupplierId
+              (e) => e.id === this.model.electronPolicySupplierId
             ) || {
               id: this.model.electronPolicySupplierId,
-              text: this.model.electronPolicySupplierName
+              text: this.model.electronPolicySupplierName,
             }
             this.changeInsurance(item)
           } else {
@@ -249,8 +260,8 @@ export const createOrder = {
       })
 
       if (this.model.payType) {
-        var item = this.paymodes.find(e => e.type === this.model.payType) || {
-          type: this.model.payType
+        var item = this.paymodes.find((e) => e.type === this.model.payType) || {
+          type: this.model.payType,
         }
         this.changePaymode(item, 0, this.model.payRemark)
       }
@@ -276,8 +287,10 @@ export const createOrder = {
       }
       this.deviceTemplate = this.model.tempPlateDevice
       var vehicle = this.model.vehicleExtend
-      this.vehicleVersion = `${vehicle.factoryName} / ${vehicle.brandName} / ${vehicle.versionName}`
-      this.brandName = this.model.vehicleExtend.versionName
+      if (vehicle.versionId) {
+        this.vehicleVersion = `${vehicle.factoryName} / ${vehicle.brandName} / ${vehicle.versionName}`
+      }
+      this.brandName = vehicle.versionName || ''
     },
     showPopup(type, status = true) {
       this.popList[type] = status
@@ -315,12 +328,12 @@ export const createOrder = {
       }
       this.$set(this.model, 'shopId', value.id)
       this.popList.shops = false
-      shopDetail(value.id).then(json => {
+      shopDetail(value.id).then((json) => {
         this.currentShop.bitwise = json
         this.jieyiRule()
       })
       //驻店员
-      icbSaleList(value.id).then(json => {
+      icbSaleList(value.id).then((json) => {
         if (!json || json.length === 0) {
           value.disabled = true
           this.icbSaleList = []
@@ -329,10 +342,10 @@ export const createOrder = {
           return
         }
         if (this.model.acbSaleId) {
-          var item = json.find(e => e.id === this.model.acbSaleId) || {
+          var item = json.find((e) => e.id === this.model.acbSaleId) || {
             id: this.model.acbSaleId,
             text: this.model.acbSaleName,
-            mobile: this.model.acbSaleMobile
+            mobile: this.model.acbSaleMobile,
           }
           this.changeIcbSale(item)
         } else {
@@ -341,7 +354,7 @@ export const createOrder = {
         this.icbSaleList = json
       })
       //本店销售
-      saleList(value.id).then(json => {
+      saleList(value.id).then((json) => {
         if (!json || json.length === 0) {
           value.disabled = true
           this.saleList = this.sourceList.saleList = []
@@ -352,10 +365,10 @@ export const createOrder = {
           return
         }
         if (this.model.shopSaleId) {
-          var item = json.find(e => e.id === this.model.shopSaleId) || {
+          var item = json.find((e) => e.id === this.model.shopSaleId) || {
             id: this.model.shopSaleId,
             text: this.model.shopSaleName,
-            mobile: this.model.shopSaleMobile
+            mobile: this.model.shopSaleMobile,
           }
           this.changeSale(item)
         } else {
@@ -363,7 +376,7 @@ export const createOrder = {
         }
         this.saleList = this.sourceList.saleList = json
       })
-      templates(value.id).then(json => {
+      templates(value.id).then((json) => {
         if (!json || json.length === 0) {
           value.disabled = true
           this.templates = []
@@ -372,10 +385,10 @@ export const createOrder = {
           return
         }
         if (this.model.templateId) {
-          var item = json.find(e => e.id === this.model.templateId) || {
+          var item = json.find((e) => e.id === this.model.templateId) || {
             id: this.model.templateId,
             text: this.model.templateName,
-            month: this.model.year * 12
+            month: this.model.year * 12,
           }
           this.changeTemplate(item)
         }
@@ -519,7 +532,7 @@ export const createOrder = {
       this.model.vehicleExtend.financeName = value.text
       this.popList.finances = false
       //金融备注
-      financeRemark(this.currentShop.id, value.id).then(remark => {
+      financeRemark(this.currentShop.id, value.id).then((remark) => {
         this.model.vehicleExtend.financeRemark = remark ? remark : value.remark
       })
     },
@@ -550,10 +563,10 @@ export const createOrder = {
       }
       if (ocrType >= 0) {
         this.$toast.loading({
-          message: '识别中...'
+          message: '识别中...',
         })
         return ocr(file.file, ocrType)
-          .then(json => {
+          .then((json) => {
             // console.log(json)
             this.model.cardPicture = json.url
             if (Object.keys(json.words).length > 0) {
@@ -577,27 +590,25 @@ export const createOrder = {
           })
           .catch(() => {
             this.$toast({
-              type: 'fail',
               message: '证件照识别失败',
               position: 'bottom',
-              duration: 2000
+              duration: 2000,
             })
           })
       } else {
         this.$toast.loading({
-          message: '上传中...'
+          message: '上传中...',
         })
         return upload(file.file)
-          .then(json => {
+          .then((json) => {
             this.model.cardPicture = json
             this.$toast.clear()
           })
           .catch(() => {
             this.$toast({
-              type: 'fail',
               message: '证件照上传失败',
               position: 'bottom',
-              duration: 2000
+              duration: 2000,
             })
           })
       }
@@ -612,10 +623,10 @@ export const createOrder = {
       //营业执照
       // console.log(file)
       var loading = this.$toast.loading({
-        message: '识别中...'
+        message: '识别中...',
       })
       return ocr(file.file, 3)
-        .then(json => {
+        .then((json) => {
           // console.log(json)
           this.model.cardPicture = json.url
           if (Object.keys(json.words).length > 0) {
@@ -646,10 +657,9 @@ export const createOrder = {
         })
         .catch(() => {
           this.$toast({
-            type: 'fail',
             message: '营业执照识别失败',
             position: 'bottom',
-            duration: 2000
+            duration: 2000,
           })
         })
     },
@@ -663,10 +673,10 @@ export const createOrder = {
       //机动车发票
       // console.log(file)
       this.$toast.loading({
-        message: '识别中...'
+        message: '识别中...',
       })
       return ocr(file.file, 5)
-        .then(json => {
+        .then((json) => {
           // console.log(json)
           this.$toast.clear()
           this.model.vehicleExtend.invoice = json.url
@@ -699,10 +709,9 @@ export const createOrder = {
         })
         .catch(() => {
           this.$toast({
-            type: 'fail',
             message: '机动车发票/合同识别失败',
             position: 'bottom',
-            duration: 2000
+            duration: 2000,
           })
         })
     },
@@ -715,11 +724,11 @@ export const createOrder = {
     handleUploadQc(file) {
       //车辆合格证
       this.$toast.loading({
-        message: '识别中...'
+        message: '识别中...',
       })
       // console.log(file)
       return ocr(file.file, 4)
-        .then(json => {
+        .then((json) => {
           // console.log(json)
           this.model.vehicleExtend.certificate = json.url
           if (Object.keys(json.words).length > 0) {
@@ -747,10 +756,9 @@ export const createOrder = {
         })
         .catch(() => {
           this.$toast({
-            type: 'fail',
             message: '车辆合格证识别失败',
             position: 'bottom',
-            duration: 2000
+            duration: 2000,
           })
         })
     },
@@ -764,19 +772,18 @@ export const createOrder = {
       //支付证明
       // console.log(file)
       this.$toast.loading({
-        message: '上传中...'
+        message: '上传中...',
       })
       return upload(file.file)
-        .then(json => {
+        .then((json) => {
           this.model.payPictures = json
           this.$toast.clear()
         })
         .catch(() => {
           this.$toast({
-            type: 'fail',
             message: '支付证明上传失败',
             position: 'bottom',
-            duration: 2000
+            duration: 2000,
           })
         })
     },
@@ -789,19 +796,18 @@ export const createOrder = {
     handleUploadExtend(file) {
       //附件图片
       this.$toast.loading({
-        message: '上传中...'
+        message: '上传中...',
       })
       return upload(file.file)
-        .then(json => {
+        .then((json) => {
           this.model.extendPicture.push(json)
           this.$toast.clear()
         })
         .catch(() => {
           this.$toast({
-            type: 'fail',
             message: '附加图片上传失败',
             position: 'bottom',
-            duration: 2000
+            duration: 2000,
           })
         })
     },
@@ -816,11 +822,16 @@ export const createOrder = {
         //todo 表单验证
         const isValid = await this.$refs.observer.validate()
         if (!isValid) {
+          this.$toast({
+            message: '订单数据未通过验证,请修改',
+            position: 'bottom',
+            duration: 2000,
+          })
           return false
         }
       }
       Dialog.confirm({
-        message: draft ? '确认保存草稿？' : '确认提交订单？'
+        message: draft ? '确认保存草稿？' : '确认提交订单？',
       }).then(() => {
         //提交
         this.model.draft = draft
@@ -830,7 +841,7 @@ export const createOrder = {
         postModel.extendPicture = Object.assign([], this.model.extendPicture)
 
         var loading = this.$toast.loading({
-          message: '订单提交中...'
+          message: '订单提交中...',
         })
         if (this.orderId) {
           edit(postModel)
@@ -838,7 +849,7 @@ export const createOrder = {
               loading.clear()
               Dialog.alert({
                 title: '操作提示',
-                message: '编辑成功'
+                message: '编辑成功',
               }).then(() => {
                 this.$router.push('/order/list')
               })
@@ -848,7 +859,26 @@ export const createOrder = {
                 type: 'fail',
                 message: '编辑订单失败',
                 position: 'bottom',
-                duration: 2000
+                duration: 2000,
+              })
+            })
+        } else if (draft) {
+          draftSave(postModel)
+            .then(() => {
+              loading.clear()
+              Dialog.alert({
+                title: '操作提示',
+                message: '保存草稿成功',
+              }).then(() => {
+                this.$router.push('/order/draft')
+              })
+            })
+            .catch(() => {
+              this.$toast({
+                type: 'fail',
+                message: '保存草稿失败',
+                position: 'bottom',
+                duration: 2000,
               })
             })
         } else {
@@ -868,7 +898,7 @@ export const createOrder = {
                 type: 'fail',
                 message: '创建订单失败',
                 position: 'bottom',
-                duration: 2000
+                duration: 2000,
               })
             })
         }
@@ -902,11 +932,11 @@ export const createOrder = {
       this.model.vehicleExtend.configId = ''
       this.model.vehicleExtend.configName = ''
       //加载车型配置
-      configList(version.id).then(json => {
+      configList(version.id).then((json) => {
         this.configList = json
       })
       //加载设备模板
-      deviceTemplate(this.currentShop.id, version.id).then(json => {
+      deviceTemplate(this.currentShop.id, version.id).then((json) => {
         this.deviceTemplates = json
         if (json && json.length) {
           var tmp = json[0]
@@ -978,11 +1008,11 @@ export const createOrder = {
         this.jieyiState = false
         this.$set(this.model, 'jieyixian', false)
       }
-    }
+    },
   },
   watch: {
     'model.ownerName': function(val) {
       this.model.beneficiary = val
-    }
-  }
+    },
+  },
 }

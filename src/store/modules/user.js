@@ -7,7 +7,7 @@ const user = {
     avatar: '',
     nick: '',
     mobile: '',
-    token: ''
+    token: '',
   },
   mutations: {
     SET_ID: (state, id) => {
@@ -27,11 +27,11 @@ const user = {
     },
     SET_TOKEN: (state, token) => {
       state.token = token
-    }
+    },
   },
   actions: {
     updateToken({ commit }, data) {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         commit('SET_TOKEN', data)
         setTicket(data)
         resolve()
@@ -47,15 +47,19 @@ const user = {
       commit('SET_AVATAR', '')
     },
     updateUser({ commit }) {
-      return getInfo().then(data => {
-        commit('SET_TOKEN', getTicket())
-        commit('SET_ID', data.id)
-        commit('SET_ACCOUNT', data.account)
-        commit('SET_NICK', data.nick || data.name || data.mobile)
-        commit('SET_MOBILE', data.mobile)
-        commit('SET_AVATAR', data.headPic)
-      })
-    }
-  }
+      return getInfo()
+        .then((data) => {
+          commit('SET_TOKEN', getTicket())
+          commit('SET_ID', data.id)
+          commit('SET_ACCOUNT', data.account)
+          commit('SET_NICK', data.nick || data.name || data.mobile)
+          commit('SET_MOBILE', data.mobile)
+          commit('SET_AVATAR', data.headPic)
+        })
+        .catch(() => {
+          removeTicket()
+        })
+    },
+  },
 }
 export default user

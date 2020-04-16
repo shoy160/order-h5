@@ -67,7 +67,7 @@
               详情
             </van-button>
             <van-button
-              v-if="[11, 21, 31].includes(item.state)"
+              v-if="[11, 21, 31].includes(item.state) && (item.orderSource & 96)===0"
               size="small"
               type="info"
               @click="handleEdit(item.id)"
