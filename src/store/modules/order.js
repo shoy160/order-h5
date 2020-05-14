@@ -1,7 +1,7 @@
 import { shopList, unitList, versionTree } from '@/services/account'
 import pinyin from 'js-pinyin'
 
-const indexTypes = types => {
+const indexTypes = (types) => {
   var list = []
   for (var i in types) {
     var factory = types[i]
@@ -23,7 +23,7 @@ const indexTypes = types => {
           factory: factory.name,
           brandId: brand.id,
           brand: brand.name,
-          desc: `${factory.name},${brand.name},${version.name}`
+          desc: `${factory.name},${brand.name},${version.name}`,
         })
       }
     }
@@ -43,7 +43,7 @@ const order = {
     carTypes: [],
     motoTypes: [],
     //店铺
-    shops: []
+    shops: [],
   },
   mutations: {
     SET_INSURANCES(state, insurances) {
@@ -60,7 +60,7 @@ const order = {
     },
     SET_MOTOTYPES(state, types) {
       state.motoTypes = types
-    }
+    },
   },
   actions: {
     getInsurances({ commit, state }, callback) {
@@ -68,7 +68,7 @@ const order = {
         callback && callback.call()
         return
       }
-      unitList(1).then(json => {
+      unitList(1).then((json) => {
         commit('SET_INSURANCES', json)
         callback && callback.call()
       })
@@ -78,7 +78,7 @@ const order = {
         callback && callback.call()
         return
       }
-      unitList(2).then(json => {
+      unitList(2).then((json) => {
         commit('SET_FINANCES', json)
         callback && callback.call()
       })
@@ -91,7 +91,7 @@ const order = {
         callback && callback.call()
         return
       }
-      versionTree(type).then(json => {
+      versionTree(type).then((json) => {
         types = indexTypes(json.data)
         commit(type === 4 ? 'SET_CARTYPES' : 'SET_MOTOTYPES', types)
         callback && callback.call()
@@ -101,12 +101,12 @@ const order = {
       if (state.shops.length > 0) {
         callback && callback.call()
       } else {
-        shopList().then(json => {
+        shopList(1, 5000).then((json) => {
           commit('SET_SHOPS', json)
           callback && callback.call()
         })
       }
-    }
-  }
+    },
+  },
 }
 export default order

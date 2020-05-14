@@ -3,7 +3,7 @@ import axios from 'axios'
 /**
  * 时间转换
  */
-export const toDate = time => {
+export const toDate = (time) => {
   if (!time) return new Date()
   try {
     if (typeof time === 'number') return new Date(time)
@@ -26,9 +26,44 @@ export const dateAdd = (time, day) => {
 }
 
 /**
+ * 保留小数位
+ * @param {*} x
+ * @param {*} decimals
+ */
+export const toDecimal = (x, decimals = 2) => {
+  var num = parseFloat(x)
+  if (isNaN(num)) {
+    return false
+  }
+  var pow = Math.pow(10, decimals)
+  num = Math.round(x * pow) / pow
+  var s = num.toString()
+  var rs = s.indexOf('.')
+  if (rs < 0) {
+    rs = s.length
+    s += '.'
+  }
+  while (s.length <= rs + decimals) {
+    s += '0'
+  }
+  return s
+}
+
+/**
+ * 计算比例
+ * @param {*} total
+ * @param {*} num
+ * @param {*} decimals
+ */
+export const calcRatio = (total, num, decimals = 2) => {
+  if (total === 0 || num === 0) return toDecimal(0, decimals)
+  return toDecimal(num / total, decimals)
+}
+
+/**
  * 是否是手机号码
  */
-export const isMobile = mobile => {
+export const isMobile = (mobile) => {
   return /^1[0-9]{10}$/gi.test(mobile)
 }
 
@@ -105,12 +140,12 @@ export const downloadFile = (url, filename) => {
       axios({
         method: 'get',
         responseType: 'arraybuffer',
-        url: url
+        url: url,
       })
-        .then(res => {
+        .then((res) => {
           let blob = new Blob([res.data], {
             //type类型后端返回来的数据中会有，根据自己实际进行修改
-            type: 'application/pdf'
+            type: 'application/pdf',
           })
           if (typeof window.navigator.msSaveBlob !== 'undefined') {
             // console.log('save blob')
@@ -123,7 +158,7 @@ export const downloadFile = (url, filename) => {
           }
           resolve()
         })
-        .catch(err => {
+        .catch((err) => {
           //调试阶段可以看看报的什么错
           // console.log('error', err)
           reject(err)
@@ -137,7 +172,7 @@ export const idTypes = [
   { type: 2, text: '驾驶证' },
   { type: 3, text: '军官证' },
   { type: 4, text: '护照' },
-  { type: 6, text: '港澳通行证' }
+  { type: 6, text: '港澳通行证' },
 ]
 
 export const contactTypes = ['家人', '同事', '朋友', '其他']
@@ -148,14 +183,14 @@ export const paymodes = [
   { type: 3, text: '对公转账' },
   { type: 4, text: '成都银行扫码' },
   { type: 5, text: 'POS机' },
-  { type: 6, text: '月结' }
+  { type: 6, text: '月结' },
 ]
 export const installContacts = [
   { type: 0, text: '驻店员' },
   { type: 1, text: '销售顾问' },
   { type: 2, text: '车主' },
   { type: 3, text: '备用联系人' },
-  { type: -1, text: '其他' }
+  { type: -1, text: '其他' },
 ]
 
 export const orderStates = [
@@ -173,5 +208,5 @@ export const orderStates = [
   { type: -300, text: '已退保' },
   { type: -301, text: '退保中' },
   { type: -302, text: '退保失败' },
-  { type: -400, text: '停止服务' }
+  { type: -400, text: '停止服务' },
 ]

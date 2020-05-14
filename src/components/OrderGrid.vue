@@ -3,6 +3,7 @@
     <van-grid-item text="订单量">
       <div slot="icon" class="d-number">
         <countTo :startVal="0" :endVal="model.count" :duration="duration" />
+        <!-- <small>{{ compareData('count') }}%</small> -->
       </div>
     </van-grid-item>
     <van-grid-item text="按揭订单">
@@ -12,29 +13,43 @@
           :endVal="model.mortgageCount"
           :duration="duration"
         />
+        <!-- <small>{{ compareData('mortgageCount') }}%</small> -->
       </div>
     </van-grid-item>
     <van-grid-item text="V2单量">
       <div slot="icon" class="d-number">
         <countTo :startVal="0" :endVal="model.v2Count" :duration="duration" />
+        <!-- <small>{{ compareData('v2Count') }}%</small> -->
       </div>
     </van-grid-item>
     <van-grid-item text="V3单量">
       <div slot="icon" class="d-number">
         <countTo :startVal="0" :endVal="model.v3Count" :duration="duration" />
+        <!-- <small>{{ compareData('v3Count') }}%</small> -->
       </div>
     </van-grid-item>
     <van-grid-item text="实收金额">
-      <amountCountTo slot="icon" :amount="model.paid" :duration="duration" />
+      <div slot="icon" class="d-number">
+        <amountCountTo :amount="model.paid" :duration="duration" />
+        <!-- <small>{{ compareData('paid') }}%</small> -->
+      </div>
     </van-grid-item>
     <van-grid-item text="承保金额">
-      <amountCountTo slot="icon" :amount="model.insured" :duration="duration" />
+      <div slot="icon" class="d-number">
+        <amountCountTo :amount="model.insured" :duration="duration" />
+        <!-- <small>{{ compareData('insured') }}%</small> -->
+      </div>
     </van-grid-item>
     <van-grid-item text="成本金额">
-      <amountCountTo slot="icon" :amount="model.cost" :duration="duration" />
+      <div slot="icon" class="d-number">
+        <amountCountTo :amount="model.cost" :duration="duration" />
+        <!-- <small>{{ compareData('cost') }}%</small> -->
+      </div>
     </van-grid-item>
     <van-grid-item text="利润金额">
-      <amountCountTo slot="icon" :amount="profit" :duration="duration" />
+      <div slot="icon" class="d-number">
+        <amountCountTo :amount="profit" :duration="duration" />
+      </div>
     </van-grid-item>
   </van-grid>
 </template>
@@ -58,28 +73,43 @@ export default {
           insured: 0.0,
           paid: 0.0,
           cost: 0.0,
-          mortgageCount: 0
+          mortgageCount: 0,
         }
-      }
-    }
+      },
+    },
+    compare: {
+      type: Object,
+      default: undefined,
+    },
   },
   computed: {
     profit() {
       return this.model.paid - this.model.cost
-    }
+    },
+    compareCount() {
+      return this.compareData('count')
+    },
   },
   data() {
     return {
-      duration: 1500
+      duration: 1500,
     }
   },
-  mounted() {}
+  methods: {
+    compareData(attr) {
+      if (!this.compare || this.compare[attr] === 0) return 0
+      return (
+        ((this.model[attr] - this.compare[attr]) * 100) /
+        this.compare[attr]
+      ).toFixed(2)
+    },
+  },
 }
 </script>
-<style scoped>
+<style>
 .van-grid-item__text {
-  margin-top: 0.5rem;
-  font-size: 12px;
+  margin-top: 0.3rem;
+  font-size: 0.77rem;
   color: #b8b8b8;
 }
 .d-number {
@@ -89,6 +119,6 @@ export default {
   color: #555;
 }
 .d-number span {
-  text-shadow: 1px 0px 1px #ccc;
+  text-shadow: 1px 0px 2px #9b9b9b;
 }
 </style>

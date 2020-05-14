@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="d-selector">
     <div class="d-selector-top">
       <van-nav-bar
         title="选择车型"
@@ -17,7 +17,7 @@
         <div slot="action" @click="handleSearch">搜索</div>
       </van-search>
     </div>
-    <van-index-bar :index-list="indexList">
+    <van-index-bar :index-list="indexList" :sticky-offset-top="100">
       <template v-for="item in list">
         <van-index-anchor
           v-if="item.isIndex"
@@ -67,12 +67,12 @@ export default {
   props: {
     type: {
       type: Number,
-      default: 4
+      default: 4,
     },
-    brand: String
+    brand: String,
   },
   computed: {
-    ...mapGetters(['carTypes', 'motoTypes'])
+    ...mapGetters(['carTypes', 'motoTypes']),
   },
   watch: {
     type(val) {
@@ -80,7 +80,7 @@ export default {
     },
     brand(val) {
       this.keyword = val
-    }
+    },
   },
   data() {
     return { keyword: '', indexList: [], list: [] }
@@ -101,14 +101,14 @@ export default {
     },
     getVersions(type) {
       this.$toast.loading({
-        message: '加载中...'
+        message: '加载中...',
       })
       this.$store.dispatch('getTypes', {
         type: type,
         callback: () => {
           this.handleSearch()
           this.$toast.clear()
-        }
+        },
       })
     },
     handleSearch() {
@@ -117,7 +117,7 @@ export default {
       var index = ''
       var types = this.type == 4 ? this.carTypes : this.motoTypes
       this.$toast.loading({
-        message: '搜索中...'
+        message: '搜索中...',
       })
       for (var i in types) {
         var item = types[i]
@@ -136,11 +136,14 @@ export default {
         this.list.push(item)
       }
       this.$toast.clear()
-    }
-  }
+    },
+  },
 }
 </script>
 <style>
+.d-selector {
+  padding-top: 100px;
+}
 .d-selector-top {
   position: fixed;
   top: 0;
@@ -149,12 +152,14 @@ export default {
   z-index: 9999;
 }
 .van-index-bar {
-  margin-top: 100px;
   background-color: #f7f8fa;
+  /* margin-top: 100px; */
 }
 .van-index-bar__index {
-  padding: 0.3rem 0.7rem;
-  font-size: 0.75rem;
+  padding: 0.15rem 0.7rem;
+}
+.van-index-bar__sidebar {
+  top: 58%;
 }
 .d-breadcrumb {
   color: #666;

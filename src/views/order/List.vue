@@ -305,6 +305,7 @@ export default {
 }
 .van-list {
   background-color: #f9f9f9;
+  padding-bottom: 45px;
 }
 .van-panel__footer {
   background-color: #fefefe;

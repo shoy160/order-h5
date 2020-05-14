@@ -14,7 +14,7 @@ export const login = (account, pwd, vkey, vcode) => {
     account: account,
     password: pwd,
     vkey: vkey,
-    vcode: vcode
+    vcode: vcode,
   })
 }
 
@@ -29,26 +29,27 @@ export const getInfo = () => {
  * 获取验证码
  * @param {string} key
  */
-export const getVcode = key => {
+export const getVcode = (key) => {
   return ajax.get(`${authHost}/account/vcode/image`, {
     params: {
-      key: key
-    }
+      key: key,
+    },
   })
 }
 
 /**
  * 经销商列表
  */
-export const shopList = (page = 1) => {
+export const shopList = (page = 1, size = 50, name = '') => {
   return ajax
     .get(`${authHost}/shop/current`, {
       params: {
+        name: name,
         page: page,
-        size: 500
-      }
+        size: size,
+      },
     })
-    .then(json => {
+    .then((json) => {
       if (json.status && json.data) {
         var shops = []
         for (var i in json.data) {
@@ -57,7 +58,7 @@ export const shopList = (page = 1) => {
             id: item.id,
             text: item.name,
             address: item.addrDesc,
-            bitwise: item.bitwise
+            bitwise: item.bitwise,
           })
         }
         return shops
@@ -66,7 +67,7 @@ export const shopList = (page = 1) => {
     })
 }
 
-export const shopDetail = id => {
+export const shopDetail = (id) => {
   return ajax.get(`${authHost}/shop/bitwise/${id}`)
 }
 
@@ -82,10 +83,10 @@ export const unitList = (type, page = 1) => {
         type: type,
         state: 0,
         page: page,
-        size: 50
-      }
+        size: 50,
+      },
     })
-    .then(json => {
+    .then((json) => {
       if (json.status && json.data) {
         var units = []
         for (var index in json.data) {
@@ -96,7 +97,7 @@ export const unitList = (type, page = 1) => {
             remark:
               item.financeExtend && item.financeExtend.financeRemark
                 ? item.financeExtend.financeRemark
-                : ''
+                : '',
           })
         }
         return units
@@ -113,8 +114,8 @@ export const versionTree = (type = 4) => {
   return ajax.get(`${authHost}/vehicle/basic/list/tree`, {
     params: {
       bitwise: type,
-      isCurrent: true
-    }
+      isCurrent: true,
+    },
   })
 }
 
@@ -123,7 +124,7 @@ export const versionTree = (type = 4) => {
  * @param {*} versionId
  * @param {*} all
  */
-export const configList = versionId => {
+export const configList = (versionId) => {
   // var onsale = !all
   return ajax
     .get(`${authHost}/vehicle/basic/config`, {
@@ -131,10 +132,10 @@ export const configList = versionId => {
         versionId: versionId,
         page: 1,
         size: 500,
-        nosale: ''
-      }
+        nosale: '',
+      },
     })
-    .then(json => {
+    .then((json) => {
       if (json.status && json.data) {
         var list = []
         for (var index in json.data) {
@@ -151,14 +152,14 @@ export const configList = versionId => {
  * 驻店员列表
  * @param {*} shopId
  */
-export const icbSaleList = shopId => {
+export const icbSaleList = (shopId) => {
   return ajax
     .get(`${authHost}/appm/employee/acb_sale`, {
       params: {
-        shopId: shopId
-      }
+        shopId: shopId,
+      },
     })
-    .then(json => {
+    .then((json) => {
       if (json.status && json.data) {
         var list = []
         for (var index in json.data) {
@@ -183,10 +184,10 @@ export const saleList = (shopId, page = 1) => {
         role: 4,
         shopId: shopId,
         page: page,
-        size: 50
-      }
+        size: 50,
+      },
     })
-    .then(json => {
+    .then((json) => {
       if (json.status && json.data) {
         var list = []
         for (var index in json.data) {
@@ -208,10 +209,10 @@ export const financeRemark = (shopId, financeId) => {
   return ajax
     .get(`${authHost}/shop/${shopId}`, {
       params: {
-        financeId: financeId
-      }
+        financeId: financeId,
+      },
     })
-    .then(json => {
+    .then((json) => {
       return json.financeRemark1 || ''
     })
 }
@@ -221,7 +222,7 @@ export const logs = (sourceId, page = 1, size = 20) => {
     params: {
       sourceId: sourceId,
       page: page,
-      size: size
-    }
+      size: size,
+    },
   })
 }
